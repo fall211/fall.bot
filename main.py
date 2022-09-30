@@ -1,6 +1,5 @@
 import discord
 from key import key
-#from discord.ext import commands
 import asyncio
 import random
 import sys
@@ -14,18 +13,6 @@ client = discord.Client()
 async def on_ready():
     print('Logged in as')
     print(client.user.name, client.user.id)
-
-#description = '''default description'''
-#intents = discord.Intents.default()
-#intents.members = True
-
-#bot = commands.Bot(command_prefix='!', description=description, intents=intents)
-
-#@bot.command(pass_context= True)
-#async def clean(ctx, limit: int):
-#  await ctx.channel.purge(limit=limit)
-#  await ctx.send('cleared')
-#  await ctx.delete()
 
 
 @client.event
