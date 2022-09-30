@@ -5,7 +5,7 @@ import random
 import sys
 
 
-lst = ["guac"]
+lst = ["guac", "No_test"]
 
 client = discord.Client()
 
