@@ -1,14 +1,15 @@
-import sys
-import subprocess
+import subprocess, sys, asyncio
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from key import key_fallBot
+from key import key_fallBot, key_tBot, server_id, test_id
 
+test_command_path = "/Users/tuukkav/testbash.sh"
 start_server_path = "/home/steam/start_server.sh"
 stop_server_path = "/home/steam/stop_server.sh"
+
 
 
 class MyClient(discord.Client):
@@ -18,7 +19,7 @@ class MyClient(discord.Client):
         self.added = False
 
     async def on_ready(self):
-        await tree.sync(guild=discord.Object(id=318264635252015106))
+        await tree.sync(guild=discord.Object(id=server_id))
         self.synced = True
         print("Logged in as")
         print(self.user.name, self.user.id)
@@ -31,6 +32,21 @@ class Menu(discord.ui.View):
         super().__init__(timeout=None)
         self.cooldown = commands.CooldownMapping.from_cooldown(1,15, commands.BucketType.default)
 
+#* Test
+#    @discord.ui.button(label="run test command", style=discord.ButtonStyle.blurple, custom_id="test")
+#    async def run_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
+#
+#        bucket = self.cooldown.get_bucket(interaction.message)
+#        retry = bucket.update_rate_limit()
+#        if retry or not interaction.permissions.administrator:
+#            return await interaction.response.send_message("Error", ephemeral=True)
+
+#        await interaction.response.defer(ephemeral=True)
+#        # await asyncio.sleep(4)
+#        msg2 = await interaction.followup.send("1.", ephemeral=True)
+#        await asyncio.sleep(1)
+#        await msg2.edit(content="2.")
+
 
 #* Start Server
     @discord.ui.button(label="Start Server", style=discord.ButtonStyle.green, custom_id="start")
@@ -41,14 +57,15 @@ class Menu(discord.ui.View):
         if retry or not interaction.permissions.administrator:
             return await interaction.response.send_message("ERROR: No permission.", ephemeral=True)
 
+        await interaction.response.defer(ephemeral=True)
         process = subprocess.Popen([start_server_path])
-        await interaction.response.send_message("Server has been started.", ephemeral=True)
+        msg = await interaction.followup.send("Server has been started.", ephemeral=True)
         process.wait()
-        await interaction.response.send_message("Server will soon be online.", ephemeral=True)
+        await msg.edit("Server will soon be online.")
 
 
 #* Stop server
-    @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.red, custom_id="stop")
+    @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, custom_id="stop")
     async def stop_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         bucket = self.cooldown.get_bucket(interaction.message)
@@ -56,10 +73,12 @@ class Menu(discord.ui.View):
         if retry or not interaction.permissions.administrator:
             return await interaction.response.send_message("ERROR: No permission.", ephemeral=True)
 
+        await interaction.response.defer(ephemeral=True)
         process = subprocess.Popen([stop_server_path])
-        await interaction.response.send_message("Server shutdown initiated.", ephemeral=True)
+        msg = await interaction.followup.send("Server shutdown initiated.", ephemeral=True)
         process.wait()
-        await interaction.response.send_message("Server has been shutdown.", ephemeral=True)
+        await msg.edit("Server shutdown completed.")
+
 
 
 client = MyClient()
@@ -68,7 +87,7 @@ tree = app_commands.CommandTree(client)
 @tree.command(
     name="panel", 
     description="opens the server control panel", 
-    guild=discord.Object(id=318264635252015106),)
+    guild=discord.Object(id=server_id),)
 
 async def self(interaction: discord.Interaction):
     await interaction.response.send_message("choose your desired action", view=Menu())
