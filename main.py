@@ -1,11 +1,11 @@
-import subprocess, sys, asyncio
+import asyncio
+import subprocess
 
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
 from key import key_fallBot, key_tBot, server_id, test_id
-
 
 #********** File Paths **********
 test_command_path = "/Users/tuukkav/testbash.sh"
@@ -24,6 +24,7 @@ allowed_servers = [server_id, test_id]
 #! Change these before deployment.
 current_id = server_id
 log_file_path = screen_log_path
+current_key = key_fallBot
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -109,12 +110,41 @@ tree = app_commands.CommandTree(client)
 async def panel(interaction: discord.Interaction):
     await interaction.response.send_message("Choose your desired action.", view=PanelMenu())
 
+
 @tree.command(
     name="log",
-    description="Sends the last 10 lines of the server log.",
+    description="Starts realtime view of log file for ~15 minutes.",
     guild=discord.Object(id=current_id),)
 async def log(interaction: discord.Interaction):
-    await interaction.response.send_message("```" + read_last_lines(log_file_path) + "```", ephemeral=True)
+    await interaction.response.defer(ephemeral=False)
+    enable_logging()
+    msg = await interaction.followup.send("Currently logging:\n"+"```" + read_last_lines(log_file_path, 15) + "```")
+    seconds_since_interaction = 0
+    while True:
+        seconds_since_interaction += 1
+        await asyncio.sleep(1)
+        log_lines = read_last_lines(log_file_path, 15)
+        if log_lines != msg.content[3:-3]:
+            await msg.edit(content="Currently logging:\n"+"```" + log_lines + "```")
+        if not is_logging():
+            await msg.edit(content="Logging stopped.\n"+"```" + log_lines + "```")
+            await asyncio.sleep(5)
+            await msg.delete()
+            break
+        if seconds_since_interaction > 800:
+            await msg.edit(content="Logging stopped due to inactivity.\n"+"```" + log_lines + "```")
+            await asyncio.sleep(5)
+            await msg.delete()
+            break
+
+@tree.command(
+    name="stoplog",
+    description="Stops realtime view of log file.",
+    guild=discord.Object(id=current_id),)
+async def stoplog(interaction: discord.Interaction):
+    disable_logging()
+    await interaction.response.send_message("Log view stopped.", ephemeral=True)
+
 
 
 #***************** General Use Functions *****************
@@ -129,6 +159,18 @@ def check_log(log_file_path):
     with open(log_file_path) as f:
         lines = f.readlines()
     return lines[-1].find(not_running_text) != -1
+
+def disable_logging():
+    global logging
+    logging = False
+
+def enable_logging():
+    global logging
+    logging = True
+
+def is_logging():
+    return logging
+
 
 #***************** Tasks *****************
 #automatically start the server if it is not running
@@ -149,7 +191,7 @@ async def on_guild_join(guild):
         await guild.leave()
 
 #********** Run **********
-client.run(key_fallBot)
+client.run(current_key)
 
 # t.bot
 # https://discord.com/api/oauth2/authorize?client_id=393195984122806272&permissions=43072&scope=bot%20applications.commands
