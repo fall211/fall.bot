@@ -21,7 +21,6 @@ allowed_servers = [server_id, test_id]
 current_id = server_id
 log_file_path = screen_log_path
 
-
 class MyClient(discord.Client):
     def __init__(self):
         super().__init__(intents= discord.Intents.all())
@@ -96,7 +95,18 @@ class Menu(discord.ui.View):
         process.wait()
         await msg.edit(content="Server shutdown completed.")
 
+#* Show server log
+    @discord.ui.button(label="Show Server Log" ,style=discord.ButtonStyle.blurple, custom_id="log")
+    async def show_log(self, interaction: discord.Interaction, button: discord.ui.Button):
 
+        bucket = self.cooldown.get_bucket(interaction.message)
+        retry = bucket.update_rate_limit()
+        if retry or not interaction.permissions.administrator:
+            return await interaction.response.send_message("ERROR: No permission.", ephemeral=True)
+
+        await interaction.response.defer(ephemeral=True)
+        log_lines = read_last_lines(log_file_path, 25)
+        await interaction.followup.send(log_lines, ephemeral=True)
 
 client = MyClient()
 tree = app_commands.CommandTree(client)
@@ -116,17 +126,17 @@ async def self(interaction: discord.Interaction):
 
 @tree.command(
     name="log",
-    description="Shows the last 10 lines of the server log.",
+    description="Sends the last 10 lines of the server log.",
     guild=discord.Object(id=current_id),)
 
 async def log(interaction: discord.Interaction):
     await interaction.response.send_message("```" + read_last_lines(log_file_path) + "```", ephemeral=True)
 
-#return last 10 lines from file as a string
-def read_last_lines(file_name):
+#return last x lines from file as a string
+def read_last_lines(file_name, lines=10):
     with open(file_name) as f:
         lines = f.readlines()
-    return "".join(lines[-10:])
+    return "".join(lines[-lines:])
 
 #find text string in the last line of the log file, return false if not found
 def check_log(log_file_path):
