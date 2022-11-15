@@ -59,8 +59,8 @@ class PanelMenu(discord.ui.View):
 
         bucket = self.cooldown.get_bucket(interaction.message)
         retry = bucket.update_rate_limit()
-        if retry or not interaction.permissions.administrator:
-            return await interaction.response.send_message("ERROR: No permission.", ephemeral=True)
+        if retry:
+            return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
         process = subprocess.Popen([start_server_path])
@@ -75,8 +75,8 @@ class PanelMenu(discord.ui.View):
 
         bucket = self.cooldown.get_bucket(interaction.message)
         retry = bucket.update_rate_limit()
-        if retry or not interaction.permissions.administrator:
-            return await interaction.response.send_message("ERROR: No permission.", ephemeral=True)
+        if retry:
+            return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
         process = subprocess.Popen([stop_server_path])
@@ -90,8 +90,8 @@ class PanelMenu(discord.ui.View):
 
         bucket = self.cooldown.get_bucket(interaction.message)
         retry = bucket.update_rate_limit()
-        if retry or not interaction.permissions.administrator:
-            return await interaction.response.send_message("ERROR: No permission.", ephemeral=True)
+        if retry:
+            return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
         log_lines = read_last_lines(log_file_path, 15)
