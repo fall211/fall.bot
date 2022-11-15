@@ -133,10 +133,10 @@ async def log(interaction: discord.Interaction):
     await interaction.response.send_message("```" + read_last_lines(log_file_path) + "```", ephemeral=True)
 
 #return last x lines from file as a string
-def read_last_lines(file_name, lines=10):
+def read_last_lines(file_name, line_count=10):
     with open(file_name) as f:
         lines = f.readlines()
-    return "".join(lines[-lines:])
+    return "".join(lines[-line_count:])
 
 #find text string in the last line of the log file, return false if not found
 def check_log(log_file_path):
