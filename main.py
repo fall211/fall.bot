@@ -105,7 +105,7 @@ class Menu(discord.ui.View):
             return await interaction.response.send_message("ERROR: No permission.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
-        log_lines = read_last_lines(log_file_path, 25)
+        log_lines = read_last_lines(log_file_path, 15)
         await interaction.followup.send(log_lines, ephemeral=True)
 
 client = MyClient()
