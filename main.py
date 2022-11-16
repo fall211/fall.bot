@@ -1,5 +1,6 @@
 import asyncio
 import subprocess
+import time
 
 import discord
 from discord import app_commands
@@ -119,9 +120,8 @@ async def log(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=False)
     enable_logging()
     msg = await interaction.followup.send("Currently logging:\n"+"```" + read_last_lines(log_file_path, 15) + "```")
-    seconds_since_interaction = 0
+    end_time = time.time() + 800
     while True:
-        seconds_since_interaction += 1
         await asyncio.sleep(1)
         log_lines = read_last_lines(log_file_path, 15)
         if log_lines != msg.content[3:-3]:
@@ -131,7 +131,7 @@ async def log(interaction: discord.Interaction):
             await asyncio.sleep(5)
             await msg.delete()
             break
-        if seconds_since_interaction > 800:
+        if time.time > end_time:
             await msg.edit(content="Logging stopped due to inactivity.\n"+"```" + log_lines + "```")
             await asyncio.sleep(5)
             await msg.delete()
