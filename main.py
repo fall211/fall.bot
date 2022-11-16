@@ -131,7 +131,7 @@ async def log(interaction: discord.Interaction):
             await asyncio.sleep(5)
             await msg.delete()
             break
-        if time.time > end_time:
+        if time.time() > end_time:
             await msg.edit(content="Logging stopped due to inactivity.\n"+"```" + log_lines + "```")
             await asyncio.sleep(5)
             await msg.delete()
