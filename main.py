@@ -158,7 +158,19 @@ def read_last_lines(file_name, line_count=10):
 def check_log(log_file_path):
     with open(log_file_path) as f:
         lines = f.readlines()
+    #if the log file is empty return false
+    if len(lines) == 0:
+        return False
     return lines[-1].find(not_running_text) != -1
+
+#trim the log file to the last 100 lines
+def trim_log(log_file_path):
+    with open(log_file_path) as f:
+        lines = f.readlines()
+    if len(lines) > 100:
+        with open(log_file_path, "w") as f:
+            f.writelines(lines[-100:])
+    return
 
 def disable_logging():
     global logging
@@ -180,7 +192,9 @@ async def check_server():
         print("Server is not running. Starting server...")
         process = subprocess.Popen([start_server_path])
         process.wait()
-    else: print("Server is running.")
+    else: 
+        print("Server is running.")
+        trim_log(log_file_path)
 
 
 
