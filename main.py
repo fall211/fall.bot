@@ -200,6 +200,9 @@ def get_server_info():
     try:
         #get the server' RAM usage
         ram = subprocess.check_output(["free", "-m"]).decode("utf-8").splitlines()[1].strip()
+        ram.removeprefix("Mem:            7946        ")
+        ram = ram.split(" ")[2] + "MB"
+        ram = ram + " / 7946 MB"
     except:
         ram = "ERROR: Could not get RAM usage."
     try:
