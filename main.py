@@ -210,7 +210,7 @@ def get_server_info():
         #get the server' disk usage
         disk = subprocess.check_output(["df", "-h"]).decode("utf-8").splitlines()[1].strip()
         disk = disk.removeprefix("/dev/root").strip().removesuffix("/").strip()
-        percent = disk[:-3]
+        percent = disk.split(" ")[-1]
 
         disk = f"{percent} used"
     except:
