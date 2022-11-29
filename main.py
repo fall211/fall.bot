@@ -152,8 +152,7 @@ async def stoplog(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def get_ubuntu_info(interaction: discord.Interaction):
     ip, uptime, cpu, ram, disk = get_server_info()
-    #send info in dm
-    await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU: {cpu}\nRAM: {ram}\nDisk: {disk}", ephemeral=True)
+    await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
 
 
@@ -190,24 +189,30 @@ def get_server_info():
     try:
         #get the server' uptime
         uptime = subprocess.check_output(["uptime", "-p"]).decode("utf-8").strip()
+        uptime = uptime.removeprefix("up ")
     except:
         uptime = "ERROR: Could not get uptime."
     try:
         #get the server' CPU usage
         cpu = subprocess.check_output(["top", "-bn1"]).decode("utf-8").splitlines()[0].strip()
+        cpu = cpu.removeprefix("top - ")
     except:
         cpu = "ERROR: Could not get CPU usage."
     try:
         #get the server' RAM usage
         ram = subprocess.check_output(["free", "-m"]).decode("utf-8").splitlines()[1].strip()
         ram = ram.removeprefix("Mem:").strip().removeprefix("7946").strip()
-        ram = ram.split(" ")[0] + "MB"
+        ram = ram.split(" ")[0] + " MB"
         ram = ram + " / 7946 MB"
     except:
         ram = "ERROR: Could not get RAM usage."
     try:
         #get the server' disk usage
         disk = subprocess.check_output(["df", "-h"]).decode("utf-8").splitlines()[1].strip()
+        disk = disk.removeprefix("/dev/root").strip().removesuffix("/").strip()
+        percent = disk[:-3]
+
+        disk = f"{percent} used"
     except:
         disk = "ERROR: Could not get disk usage."
     
