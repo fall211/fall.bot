@@ -26,7 +26,7 @@ allowed_servers = [server_id, test_id]
 #! Change these before deployment.
 current_id = server_id
 log_file_path = screen_log_path
-current_key = key_tBot
+current_key = key_fallBot
 
 class MyClient(discord.Client):
     def __init__(self):
