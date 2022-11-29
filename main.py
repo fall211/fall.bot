@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import time
+import requests
 
 import discord
 from discord import app_commands
@@ -25,7 +26,7 @@ allowed_servers = [server_id, test_id]
 #! Change these before deployment.
 current_id = server_id
 log_file_path = screen_log_path
-current_key = key_fallBot
+current_key = key_tBot
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -97,7 +98,7 @@ class PanelMenu(discord.ui.View):
 
         await interaction.response.defer(ephemeral=True)
         log_lines = read_last_lines(log_file_path, 15)
-        await interaction.followup.send(f"```+{log_lines}+```", ephemeral=True)
+        await interaction.followup.send(f"```{log_lines}```", ephemeral=True)
 
 #***************** Main *****************
 client = MyClient()
@@ -145,6 +146,16 @@ async def stoplog(interaction: discord.Interaction):
     disable_logging()
     await interaction.response.send_message("Log view stopped.", ephemeral=True)
 
+@tree.command(
+    name="get_ubuntu_info",
+    description="Gets info about the ubuntu server.",
+    guild=discord.Object(id=current_id),)
+async def get_ubuntu_info(interaction: discord.Interaction):
+    ip, uptime, cpu, ram, disk = get_server_info()
+    #send info in dm
+    await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU: {cpu}\nRAM: {ram}\nDisk: {disk}", ephemeral=True)
+
+
 
 
 #***************** General Use Functions *****************
@@ -171,6 +182,34 @@ def trim_log(log_file_path):
         with open(log_file_path, "w") as f:
             f.writelines(lines[-100:])
     return
+
+#get key information about the ubuntu server
+def get_server_info():
+    #get the server' public IP address
+    ip = requests.get("https://api.ipify.org").text
+    try:
+        #get the server' uptime
+        uptime = subprocess.check_output(["uptime", "-p"]).decode("utf-8").strip()
+    except:
+        uptime = "ERROR: Could not get uptime."
+    try:
+        #get the server' CPU usage
+        cpu = subprocess.check_output(["top", "-bn1"]).decode("utf-8").splitlines()[0].strip()
+    except:
+        cpu = "ERROR: Could not get CPU usage."
+    try:
+        #get the server' RAM usage
+        ram = subprocess.check_output(["free", "-m"]).decode("utf-8").splitlines()[1].strip()
+    except:
+        ram = "ERROR: Could not get RAM usage."
+    try:
+        #get the server' disk usage
+        disk = subprocess.check_output(["df", "-h"]).decode("utf-8").splitlines()[1].strip()
+    except:
+        disk = "ERROR: Could not get disk usage."
+    
+    return ip, uptime, cpu, ram, disk
+
 
 def disable_logging():
     global logging
