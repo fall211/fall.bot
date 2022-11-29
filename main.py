@@ -212,7 +212,7 @@ def get_server_info():
         disk = disk.removeprefix("/dev/root").strip().removesuffix("/").strip()
         percent = disk.split(" ")[-1]
 
-        disk = f"{percent} used"
+        disk = f"{percent}"
     except:
         disk = "ERROR: Could not get disk usage."
     
