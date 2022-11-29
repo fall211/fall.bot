@@ -197,9 +197,9 @@ def get_server_info():
         cpu = subprocess.check_output(["top", "-bn1"]).decode("utf-8").splitlines()[0].strip()
         cpu = cpu.removeprefix("top - ")
         cpu = cpu.split(",")[-3]
-        # cpu = cpu.removeprefix("load average: ")
-        # cpu = round(float(cpu) * 100)
-        # cpu = f"{cpu}%"
+        cpu = cpu.removeprefix("load average: ").strip()
+        cpu = round(float(cpu) * 100)
+        cpu = f"{cpu}%"
     except:
         cpu = "ERROR: Could not get CPU usage."
     try:
