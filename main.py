@@ -8,6 +8,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 
 from key import key_fallBot, key_tBot, server_id, test_id
+import forum_scraper as fs
 
 #********** File Paths **********
 test_command_path = "/Users/tuukkav/testbash.sh"
@@ -22,6 +23,8 @@ test_log_path = "/Users/tuukkav/Desktop/school_things/ecn102/hw4log.log"
 #********** Variables **********
 not_running_text = "steam@instance-dst"
 allowed_servers = [server_id, test_id]
+updates = [] #list of tuples containing version_id, beta, release_id #!change to a file read later
+updates = fs.get_past_update_info()
 
 #! Change these before deployment.
 current_id = server_id
@@ -57,7 +60,7 @@ class PanelMenu(discord.ui.View):
 #***************** Buttons *****************
 
 #* Start Server
-    @discord.ui.button(label="Start Server", style=discord.ButtonStyle.green, custom_id="start")
+    @discord.ui.button(label="Start Server", style=discord.ButtonStyle.success, custom_id="start")
     async def start_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         bucket = self.cooldown.get_bucket(interaction.message)
@@ -91,14 +94,19 @@ class PanelMenu(discord.ui.View):
     @discord.ui.button(label="Show Server Log" ,style=discord.ButtonStyle.blurple, custom_id="log")
     async def show_log(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        bucket = self.cooldown.get_bucket(interaction.message)
-        retry = bucket.update_rate_limit()
-        if retry:
-            return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
-
         await interaction.response.defer(ephemeral=True)
         log_lines = read_last_lines(log_file_path, 15)
         await interaction.followup.send(f"```{log_lines}```", ephemeral=True)
+
+#* Check for DST updates
+    @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, custom_id="check")
+    async def check_updates(self, interaction: discord.Interaction, button: discord.ui.Button):
+        
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        if check_for_updates():
+            await interaction.followup.send("There are updates available!", ephemeral=True)
+        else:
+            await interaction.followup.send("No updates available.", ephemeral=True)
 
 #***************** Main *****************
 client = MyClient()
@@ -147,11 +155,11 @@ async def stoplog(interaction: discord.Interaction):
     await interaction.response.send_message("Log view stopped.", ephemeral=True)
 
 @tree.command(
-    name="get_ubuntu_info",
-    description="Gets info about the ubuntu server.",
+    name="get_vm_info",
+    description="Gets info about the virtual machine.",
     guild=discord.Object(id=current_id),)
 async def get_ubuntu_info(interaction: discord.Interaction):
-    ip, uptime, cpu, ram, disk = get_server_info()
+    ip, uptime, cpu, ram, disk = get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
 
@@ -182,18 +190,20 @@ def trim_log(log_file_path):
             f.writelines(lines[-100:])
     return
 
-#get key information about the ubuntu server
-def get_server_info():
-    #get the server' public IP address
+#get key information about the vm
+#NOTE: This is built around an ubuntu vm so you might have to edit the text processing before deployment
+    #on different distros
+def get_vm_info():
+    #get the server's public IP address
     ip = requests.get("https://api.ipify.org").text
     try:
-        #get the server' uptime
+        #get the server's uptime
         uptime = subprocess.check_output(["uptime", "-p"]).decode("utf-8").strip()
         uptime = uptime.removeprefix("up ")
     except:
         uptime = "ERROR: Could not get uptime."
     try:
-        #get the server' CPU usage
+        #get the server's CPU usage
         cpu = subprocess.check_output(["top", "-bn1"]).decode("utf-8").splitlines()[0].strip()
         cpu = cpu.removeprefix("top - ")
         cpu = cpu.split(",")[-3].strip()
@@ -203,7 +213,7 @@ def get_server_info():
     except:
         cpu = "ERROR: Could not get CPU usage."
     try:
-        #get the server' RAM usage
+        #get the server's RAM usage
         ram = subprocess.check_output(["free", "-m"]).decode("utf-8").splitlines()[1].strip()
         ram = ram.removeprefix("Mem:").strip().removeprefix("7946").strip()
         ram = ram.split(" ")[0]
@@ -212,7 +222,7 @@ def get_server_info():
     except:
         ram = "ERROR: Could not get RAM usage."
     try:
-        #get the server' disk usage
+        #get the server's disk usage
         disk = subprocess.check_output(["df", "-h"]).decode("utf-8").splitlines()[1].strip()
         disk = disk.removeprefix("/dev/root").strip().removesuffix("/").strip()
         percent = disk.split(" ")[-1]
@@ -222,6 +232,16 @@ def get_server_info():
         disk = "ERROR: Could not get disk usage."
     
     return ip, uptime, cpu, ram, disk
+
+# check for new updates to dst
+def check_for_updates():
+    global updates
+    if updates != fs.get_past_update_info():
+        print("there is a new update waiting to be installed")
+        updates = fs.get_past_update_info()
+        return True
+    print("no new updates")
+    return False
 
 
 def disable_logging():
