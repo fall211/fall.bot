@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
-from key import key_fallBot, key_tBot, server_id, test_id
+from key import key_fallBot, key_tBot, server_id, test_id, test_channel
 import forum_scraper as fs
 
 #********** File Paths **********
@@ -23,13 +23,17 @@ test_log_path = "/Users/tuukkav/Desktop/school_things/ecn102/hw4log.log"
 #********** Variables **********
 not_running_text = "steam@instance-dst"
 allowed_servers = [server_id, test_id]
+test_channels = [test_channel]
 updates = [] #list of tuples containing version_id, beta, release_id #!change to a file read later
 updates = fs.get_past_update_info()
 
+
+
 #! Change these before deployment.
-current_id = server_id
-log_file_path = screen_log_path
-current_key = key_fallBot
+current_id = test_id
+log_file_path = test_log_path
+current_key = key_tBot
+bot_channel_ids = test_channels
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -162,6 +166,16 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     ip, uptime, cpu, ram, disk = get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
+@tree.command(
+    name="send_to_cli",
+    description="Sends a command to the server CLI.",
+    guild=discord.Object(id=current_id),)
+async def send_to_cli(interaction: discord.Interaction, command: str):
+    await interaction.response.defer(ephemeral=True)
+    process = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE)
+    process.wait()
+    output = process.stdout.read().decode('utf-8')
+    await interaction.followup.send(f"```{output}```", ephemeral=True)
 
 
 
@@ -170,12 +184,14 @@ async def get_ubuntu_info(interaction: discord.Interaction):
 def read_last_lines(file_name, line_count=10):
     with open(file_name) as f:
         lines = f.readlines()
+        f.close()
     return "".join(lines[-line_count:])
 
 #find text string in the last line of the log file, return false if not found
 def check_log(log_file_path):
     with open(log_file_path) as f:
         lines = f.readlines()
+        f.close()
     #if the log file is empty return false
     if len(lines) == 0:
         return False
@@ -185,9 +201,11 @@ def check_log(log_file_path):
 def trim_log(log_file_path):
     with open(log_file_path) as f:
         lines = f.readlines()
+        f.close()
     if len(lines) > 100:
         with open(log_file_path, "w") as f:
             f.writelines(lines[-100:])
+            f.close()
     return
 
 #get key information about the vm
@@ -261,12 +279,12 @@ def is_logging():
 @tasks.loop(seconds=600)
 async def check_server():
     if check_log(log_file_path):
-        print("Server is not running. Starting server...")
+        print("Server shutdown detected. Starting server...")
         process = subprocess.Popen([start_server_path])
         process.wait()
     else: 
-        print("Server is running.")
         trim_log(log_file_path)
+        print("Server is running, trimming log file.")
 
 
 
@@ -275,6 +293,12 @@ async def check_server():
 async def on_guild_join(guild):
     if guild.id not in allowed_servers:
         await guild.leave()
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
 
 #********** Run **********
 client.run(current_key)
