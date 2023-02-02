@@ -30,10 +30,10 @@ updates = fs.get_past_update_info()
 
 
 #! Change these before deployment.
-current_id = test_id
-log_file_path = test_log_path
-current_key = key_tBot
-bot_channel_ids = test_channels
+current_id = server_id
+log_file_path = screen_log_path
+current_key = key_fallBot
+bot_channel_ids = allowed_servers
 
 class MyClient(discord.Client):
     def __init__(self):
