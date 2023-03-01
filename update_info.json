@@ -1,0 +1,102 @@
+{
+    "545481": {
+        "beta": true,
+        "release_id": "1961"
+    },
+    "545254": {
+        "beta": true,
+        "release_id": "1960"
+    },
+    "545108": {
+        "beta": true,
+        "release_id": "1958"
+    },
+    "542788": {
+        "beta": false,
+        "release_id": "1950"
+    },
+    "541350": {
+        "beta": false,
+        "release_id": "1948"
+    },
+    "540988": {
+        "beta": false,
+        "release_id": "1946"
+    },
+    "540053": {
+        "beta": false,
+        "release_id": "1944"
+    },
+    "539823": {
+        "beta": false,
+        "release_id": "1940"
+    },
+    "539293": {
+        "beta": false,
+        "release_id": "1939"
+    },
+    "539117": {
+        "beta": false,
+        "release_id": "1938"
+    },
+    "538959": {
+        "beta": false,
+        "release_id": "1935"
+    },
+    "538350": {
+        "beta": true,
+        "release_id": "1934"
+    },
+    "538153": {
+        "beta": true,
+        "release_id": "1933"
+    },
+    "537018": {
+        "beta": true,
+        "release_id": "1931"
+    },
+    "536845": {
+        "beta": true,
+        "release_id": "1930"
+    },
+    "536590": {
+        "beta": false,
+        "release_id": "1929"
+    },
+    "535566": {
+        "beta": false,
+        "release_id": "1927"
+    },
+    "535236": {
+        "beta": false,
+        "release_id": "1925"
+    },
+    "535066": {
+        "beta": false,
+        "release_id": "1921"
+    },
+    "534050": {
+        "beta": false,
+        "release_id": "1918"
+    },
+    "532704": {
+        "beta": false,
+        "release_id": "1914"
+    },
+    "532362": {
+        "beta": false,
+        "release_id": "1913"
+    },
+    "532302": {
+        "beta": false,
+        "release_id": "1910"
+    },
+    "531975": {
+        "beta": false,
+        "release_id": "1907"
+    },
+    "531974": {
+        "beta": true,
+        "release_id": "1908"
+    }
+}

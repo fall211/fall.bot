@@ -14,6 +14,7 @@ import forum_scraper as fs
 test_command_path = "/Users/tuukkav/testbash.sh"
 start_server_path = "/home/steam/start_server.sh"
 stop_server_path = "/home/steam/stop_server.sh"
+restart_server_path = "/home/steam/restart_server.sh"
 
 screen_log_path = "/home/steam/screenlog.0"
 test_log_path = "/Users/tuukkav/Desktop/school_things/ecn102/hw4log.log"
@@ -24,8 +25,10 @@ test_log_path = "/Users/tuukkav/Desktop/school_things/ecn102/hw4log.log"
 not_running_text = "steam@instance-dst"
 allowed_servers = [server_id, test_id]
 test_channels = [test_channel]
-updates = [] #list of tuples containing version_id, beta, release_id #!change to a file read later
-updates = fs.get_past_update_info()
+is_beta_server = False
+game_version = 500000
+beta_game_version = 500000
+
 
 
 
@@ -54,6 +57,19 @@ class MyClient(discord.Client):
             if guild.id not in allowed_servers:
                 await guild.leave()
 
+        fs.update_dict()
+
+        # change the status
+        global is_beta_server
+        global game_version, beta_game_version
+        if is_beta_server:
+            await client.change_presence(activity=discord.Game(name="Beta Don't Starve Together"))
+        else:
+            await client.change_presence(activity=discord.Game(name="Don't Starve Together"))
+        
+        game_version = fs.get_latest_update_info_from_dict(beta=False)
+        beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
+
         check_server.start()
 
 class PanelMenu(discord.ui.View):
@@ -76,6 +92,11 @@ class PanelMenu(discord.ui.View):
         process = subprocess.Popen([start_server_path])
         msg = await interaction.followup.send("Server startup initated...", ephemeral=True)
         process.wait()
+        global is_beta_server, game_version, beta_game_version
+        if is_beta_server:
+            beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
+        else:
+            game_version = fs.get_latest_update_info_from_dict(beta=False)
         await msg.edit(content="Server will soon be online.")
 
 
@@ -93,6 +114,64 @@ class PanelMenu(discord.ui.View):
         msg = await interaction.followup.send("Server shutdown initiated...", ephemeral=True)
         process.wait()
         await msg.edit(content="Server shutdown completed.")
+
+#* Restart server
+    @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.grey, custom_id="restart")
+    async def restart_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        bucket = self.cooldown.get_bucket(interaction.message)
+        retry = bucket.update_rate_limit()
+        if retry:
+            return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
+
+        await interaction.response.defer(ephemeral=True)
+        process = subprocess.Popen([restart_server_path])
+        msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
+        process.wait()
+        global is_beta_server, game_version, beta_game_version
+        if is_beta_server:
+            beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
+        else:
+            game_version = fs.get_latest_update_info_from_dict(beta=False)
+        await msg.edit(content="Server will soon be online.")
+
+#* Change between beta and live server
+    @discord.ui.button(label="Change Server", style=discord.ButtonStyle.blurple, custom_id="change")
+    async def change_server(self, interaction: discord.Interaction, button: discord.ui.Button):
+        bucket = self.cooldown.get_bucket(interaction.message)
+        retry = bucket.update_rate_limit()
+        if retry:
+            return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
+        
+        await interaction.response.defer(ephemeral=True)
+        global is_beta_server        
+        if is_beta_server:
+            await interaction.followup.send("Bot is currently accessing the beta branch! Are you sure you want to change to the live server? (yes/no)", ephemeral=True)
+        else:
+            await interaction.followup.send("Bot is currently accessing the live branch! Are you sure you want to change to the beta server? (yes/no)", ephemeral=True)
+
+        def check(m):
+            return m.author == interaction.user and m.channel == interaction.channel
+        
+        try:
+            msg = await client.wait_for('message', check=check, timeout=15.0)
+        except asyncio.TimeoutError:
+            await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
+        else:
+            if msg.content.lower() == 'yes' or msg.content.lower() == 'y':
+                is_beta_server = not is_beta_server
+                if is_beta_server:
+                    await interaction.followup.send("Bot now accessing beta server", ephemeral=True)
+                    await client.change_presence(activity=discord.Game(name="Beta Don't Starve Together"))
+                else:
+                    await interaction.followup.send("Bot now accessing live server", ephemeral=True)
+                    await client.change_presence(activity=discord.Game(name="Don't Starve Together"))
+            else:
+                await interaction.followup.send("Server change cancelled.", ephemeral=True)
+            
+            await msg.delete()
+            return
+
 
 #* Show server log
     @discord.ui.button(label="Show Server Log" ,style=discord.ButtonStyle.blurple, custom_id="log")
@@ -166,16 +245,6 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     ip, uptime, cpu, ram, disk = get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
-@tree.command(
-    name="send_to_cli",
-    description="Sends a command to the server CLI.",
-    guild=discord.Object(id=current_id),)
-async def send_to_cli(interaction: discord.Interaction, command: str):
-    await interaction.response.defer(ephemeral=True)
-    process = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE)
-    process.wait()
-    output = process.stdout.read().decode('utf-8')
-    await interaction.followup.send(f"```{output}```", ephemeral=True)
 
 
 
@@ -253,13 +322,13 @@ def get_vm_info():
 
 # check for new updates to dst
 def check_for_updates():
-    global updates
-    if updates != fs.get_past_update_info():
-        print("there is a new update waiting to be installed")
-        updates = fs.get_past_update_info()
-        return True
-    print("no new updates")
-    return False
+    fs.update_dict()
+    global is_beta_server, game_version, beta_game_version
+    latest_version = fs.get_latest_update_info_from_dict(is_beta_server)
+    if is_beta_server:
+        return latest_version != beta_game_version
+    else:
+        return latest_version != game_version
 
 
 def disable_logging():
