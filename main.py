@@ -80,7 +80,7 @@ class PanelMenu(discord.ui.View):
 #***************** Buttons *****************
 
 #* Start Server
-    @discord.ui.button(label="Start Server", style=discord.ButtonStyle.success, custom_id="start")
+    @discord.ui.button(label="Start Server", style=discord.ButtonStyle.success, row=1, custom_id="start")
     async def start_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         bucket = self.cooldown.get_bucket(interaction.message)
@@ -101,7 +101,7 @@ class PanelMenu(discord.ui.View):
 
 
 #* Stop server
-    @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, custom_id="stop")
+    @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
     async def stop_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         bucket = self.cooldown.get_bucket(interaction.message)
@@ -116,7 +116,7 @@ class PanelMenu(discord.ui.View):
         await msg.edit(content="Server shutdown completed.")
 
 #* Restart server
-    @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.grey, custom_id="restart")
+    @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.blurple, row=1, custom_id="restart")
     async def restart_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         bucket = self.cooldown.get_bucket(interaction.message)
@@ -136,7 +136,7 @@ class PanelMenu(discord.ui.View):
         await msg.edit(content="Server will soon be online.")
 
 #* Change between beta and live server
-    @discord.ui.button(label="Change Server", style=discord.ButtonStyle.blurple, custom_id="change")
+    @discord.ui.button(label="Change Server", style=discord.ButtonStyle.gray, row=2, custom_id="change")
     async def change_server(self, interaction: discord.Interaction, button: discord.ui.Button):
         bucket = self.cooldown.get_bucket(interaction.message)
         retry = bucket.update_rate_limit()
@@ -174,7 +174,7 @@ class PanelMenu(discord.ui.View):
 
 
 #* Show server log
-    @discord.ui.button(label="Show Server Log" ,style=discord.ButtonStyle.blurple, custom_id="log")
+    @discord.ui.button(label="Show Server Log" ,style=discord.ButtonStyle.gray, row=2, custom_id="log")
     async def show_log(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.response.defer(ephemeral=True)
@@ -182,7 +182,7 @@ class PanelMenu(discord.ui.View):
         await interaction.followup.send(f"```{log_lines}```", ephemeral=True)
 
 #* Check for DST updates
-    @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, custom_id="check")
+    @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, row=2, custom_id="check")
     async def check_updates(self, interaction: discord.Interaction, button: discord.ui.Button):
         
         await interaction.response.defer(ephemeral=True, thinking=True)
