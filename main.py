@@ -59,7 +59,6 @@ class MyClient(discord.Client):
 
         fs.update_dict()
 
-        # change the status
         global is_beta_server
         global game_version, beta_game_version
         if is_beta_server:
@@ -205,39 +204,6 @@ async def panel(interaction: discord.Interaction):
 
 
 @tree.command(
-    name="log",
-    description="Starts realtime view of log file for ~15 minutes.",
-    guild=discord.Object(id=current_id),)
-async def log(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=False)
-    enable_logging()
-    msg = await interaction.followup.send("Currently logging:\n"+"```" + read_last_lines(log_file_path, 15) + "```")
-    end_time = time.time() + 800
-    while True:
-        await asyncio.sleep(1)
-        log_lines = read_last_lines(log_file_path, 15)
-        if log_lines != msg.content[3:-3]:
-            await msg.edit(content="Currently logging:\n"+"```" + log_lines + "```")
-        if not is_logging():
-            await msg.edit(content="Logging stopped.\n"+"```" + log_lines + "```")
-            await asyncio.sleep(5)
-            await msg.delete()
-            break
-        if time.time() > end_time:
-            await msg.edit(content="Logging stopped due to inactivity.\n"+"```" + log_lines + "```")
-            await asyncio.sleep(5)
-            await msg.delete()
-            break
-
-@tree.command(
-    name="stoplog",
-    description="Stops realtime view of log file.",
-    guild=discord.Object(id=current_id),)
-async def stoplog(interaction: discord.Interaction):
-    disable_logging()
-    await interaction.response.send_message("Log view stopped.", ephemeral=True)
-
-@tree.command(
     name="get_vm_info",
     description="Gets info about the virtual machine.",
     guild=discord.Object(id=current_id),)
@@ -330,17 +296,6 @@ def check_for_updates():
     else:
         return latest_version != game_version
 
-
-def disable_logging():
-    global logging
-    logging = False
-
-def enable_logging():
-    global logging
-    logging = True
-
-def is_logging():
-    return logging
 
 
 #***************** Tasks *****************
