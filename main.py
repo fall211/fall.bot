@@ -26,6 +26,7 @@ not_running_text = "steam@instance-dst"
 allowed_servers = [server_id, test_id]
 test_channels = [test_channel]
 is_beta_server = False
+cluster_name = "Cluster_1"
 game_version = 500000
 beta_game_version = 500000
 
@@ -88,7 +89,7 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
-        process = subprocess.Popen([start_server_path])
+        process = subprocess.Popen([start_server_path, cluster_name, is_beta_server])
         msg = await interaction.followup.send("Server startup initated...", ephemeral=True)
         process.wait()
         global is_beta_server, game_version, beta_game_version
@@ -97,7 +98,6 @@ class PanelMenu(discord.ui.View):
         else:
             game_version = fs.get_latest_update_info_from_dict(beta=False)
         await msg.edit(content="Server will soon be online.")
-
 
 #* Stop server
     @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
@@ -124,7 +124,7 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
-        process = subprocess.Popen([restart_server_path])
+        process = subprocess.Popen([restart_server_path, cluster_name, is_beta_server])
         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
         process.wait()
         global is_beta_server, game_version, beta_game_version
@@ -171,6 +171,31 @@ class PanelMenu(discord.ui.View):
             await msg.delete()
             return
 
+#* Change the cluster name
+    @discord.ui.button(label="Change Cluster", style=discord.ButtonStyle.gray, row=2, custom_id="cluster")
+    async def change_cluster(self, interaction: discord.Interaction, button: discord.ui.Button):
+        bucket = self.cooldown.get_bucket(interaction.message)
+        retry = bucket.update_rate_limit()
+        if retry:
+            return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
+        
+        await interaction.response.defer(ephemeral=True)
+        await interaction.response.send("Currently accessing cluster: " + cluster_name, ephemeral=True)
+        await interaction.followup.send("What is the name of the cluster you want to access? (case sensitive)", ephemeral=True)
+
+        def check(m):
+            return m.author == interaction.user and m.channel == interaction.channel
+        
+        try:
+            msg = await client.wait_for('message', check=check, timeout=15.0)
+        except asyncio.TimeoutError:
+            await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
+        else:
+            global cluster_name
+            cluster_name = msg.content
+            await interaction.followup.send(f"Bot now accessing cluster {cluster_name}", ephemeral=True)
+            await msg.delete()
+            return
 
 #* Show server log
     @discord.ui.button(label="Show Server Log" ,style=discord.ButtonStyle.gray, row=2, custom_id="log")
