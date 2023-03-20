@@ -100,6 +100,9 @@ class PanelMenu(discord.ui.View):
             game_version = fs.get_latest_update_info_from_dict(beta=False)
         await msg.edit(content="Server will soon be online.")
 
+        global previous_chat_log_count
+        previous_chat_log_count = 0
+
 #* Stop server
     @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
     async def stop_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -114,6 +117,9 @@ class PanelMenu(discord.ui.View):
         msg = await interaction.followup.send("Server shutdown initiated...", ephemeral=True)
         process.wait()
         await msg.edit(content="Server shutdown completed.")
+
+        global previous_chat_log_count
+        previous_chat_log_count = 0
 
 #* Restart server
     @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.blurple, row=1, custom_id="restart")
@@ -134,6 +140,9 @@ class PanelMenu(discord.ui.View):
         else:
             game_version = fs.get_latest_update_info_from_dict(beta=False)
         await msg.edit(content="Server will soon be online.")
+
+        global previous_chat_log_count
+        previous_chat_log_count = 0
 
 #* Change between beta and live server
     @discord.ui.button(label="Change Server", style=discord.ButtonStyle.gray, row=2, custom_id="change")
@@ -316,15 +325,15 @@ def check_for_updates():
 async def send_chat_log():
     global cluster_name, is_beta_server, chat_log_channel, previous_chat_log_count
     path = get_chat_log_path(cluster_name, is_beta_server)
-    count = 0
-    with open(path, "r") as f:
-        for count, line in enumerate(f):
-            pass
-        f.close()
+    cf = open(path, 'rb')
+    count = sum(1 for i in cf)
+    cf.close()
+
+    print(count, previous_chat_log_count)
     if count > previous_chat_log_count:
         with open(path, "r") as f:
-            lines = f.readlines()
-            for i in range(previous_chat_log_count, count):
+            lines = f.readlines(-count+previous_chat_log_count)
+            for i in range(previous_chat_log_count - count):
                 await client.get_channel(chat_log_channel).send(lines[i])
         previous_chat_log_count = count
         f.close()
