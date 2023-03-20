@@ -243,7 +243,7 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def chat(interaction: discord.Interaction):
     await interaction.response.send_message("This feature is under development.", ephemeral=True)
-    print_chat_log()
+    await print_chat_log()
 
 
 #***************** General Use Functions *****************
