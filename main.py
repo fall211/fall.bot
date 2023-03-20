@@ -28,6 +28,7 @@ cluster_name = "Wilson"
 game_version = 500000
 beta_game_version = 500000
 
+previous_chat_log_count = 0
 
 
 
@@ -68,6 +69,8 @@ class MyClient(discord.Client):
         
         game_version = fs.get_latest_update_info_from_dict(beta=False)
         beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
+
+        send_chat_log.start()
 
 
 class PanelMenu(discord.ui.View):
@@ -237,13 +240,6 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     ip, uptime, cpu, ram, disk = get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
-@tree.command(
-    name="chat",
-    description="continuously prints the chat log.",
-    guild=discord.Object(id=current_id),)
-async def chat(interaction: discord.Interaction):
-    await interaction.response.send_message("This feature is under development.", ephemeral=True)
-    await print_chat_log()
 
 
 #***************** General Use Functions *****************
@@ -314,26 +310,24 @@ def check_for_updates():
     else:
         return latest_version != game_version
 
-async def print_chat_log():
-    global cluster_name
-    if cluster_name == "":
-        return
-    global is_beta_server
-    path = ""
-    if is_beta_server:
-        path = get_chat_log_path(cluster_name, beta=True)
-    else:
-        path = get_chat_log_path(cluster_name)
-    f = open(path, "r")
-    while True:
-        line = f.readline()
-        if not line:
-            await client.get_channel(chat_log_channel).send(line)
-            print(line)
-        time.sleep(0.1)
 
 #***************** Tasks *****************
-
+@tasks.loop(seconds=5)
+async def send_chat_log():
+    global cluster_name, is_beta_server, chat_log_channel, previous_chat_log_count
+    path = get_chat_log_path(cluster_name, is_beta_server)
+    count = 0
+    with open(path, "r") as f:
+        for count, line in enumerate(f):
+            pass
+        f.close()
+    if count > previous_chat_log_count:
+        with open(path, "r") as f:
+            for i, line in enumerate(f):
+                if i > previous_chat_log_count:
+                    await chat_log_channel.send(line)
+        previous_chat_log_count = count
+        f.close()
 
 #********** Events **********
 @client.event
