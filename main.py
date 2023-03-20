@@ -333,7 +333,7 @@ async def send_chat_log():
     if count > previous_chat_log_count:
         with open(path, "r") as f:
             lines = f.readlines(-count+previous_chat_log_count)
-            for i in range(previous_chat_log_count - count):
+            for i in range(count - previous_chat_log_count):
                 await client.get_channel(chat_log_channel).send(lines[i])
         previous_chat_log_count = count
         f.close()
