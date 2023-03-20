@@ -182,7 +182,7 @@ class PanelMenu(discord.ui.View):
         global cluster_name
         await interaction.response.defer(ephemeral=True)
         await interaction.followup.send("Currently accessing cluster: " + cluster_name, ephemeral=True)
-        await interaction.followup.send("What is the name of the cluster you want to access? (case sensitive)", ephemeral=True)
+        await interaction.followup.send("What is the name of the cluster you want to access? (case sensitive).\n\"cancel\" to cancel.", ephemeral=True)
 
         def check(m):
             return m.author == interaction.user and m.channel == interaction.channel
@@ -193,6 +193,10 @@ class PanelMenu(discord.ui.View):
             await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
         else:
             cluster_name = msg.content
+            if cluster_name.lower() == "cancel":
+                await interaction.followup.send("Cluster change cancelled.", ephemeral=True)
+                await msg.delete()
+                return
             await interaction.followup.send(f"Bot now accessing cluster {cluster_name}", ephemeral=True)
             await msg.delete()
             return
