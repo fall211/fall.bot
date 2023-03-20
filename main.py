@@ -181,7 +181,7 @@ class PanelMenu(discord.ui.View):
         
         global cluster_name
         await interaction.response.defer(ephemeral=True)
-        await interaction.response.send("Currently accessing cluster: " + cluster_name, ephemeral=True)
+        await interaction.followup.send("Currently accessing cluster: " + cluster_name, ephemeral=True)
         await interaction.followup.send("What is the name of the cluster you want to access? (case sensitive)", ephemeral=True)
 
         def check(m):
