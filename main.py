@@ -11,13 +11,11 @@ from key import key_fallBot, key_tBot, server_id, test_id, test_channel
 import forum_scraper as fs
 
 #********** File Paths **********
-test_command_path = "/Users/tuukkav/testbash.sh"
+
 start_server_path = "/home/steam/start_server.sh"
 stop_server_path = "/home/steam/stop_server.sh"
 restart_server_path = "/home/steam/restart_server.sh"
 
-screen_log_path = "/home/steam/screenlog.0"
-test_log_path = "/Users/tuukkav/Desktop/school_things/ecn102/hw4log.log"
 
 
 
@@ -33,11 +31,12 @@ beta_game_version = 500000
 
 
 
+
 #! Change these before deployment.
 current_id = server_id
-log_file_path = screen_log_path
 current_key = key_fallBot
 bot_channel_ids = allowed_servers
+chat_log_channel = 1087449487376666624
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -70,7 +69,6 @@ class MyClient(discord.Client):
         game_version = fs.get_latest_update_info_from_dict(beta=False)
         beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
 
-        check_server.start()
 
 class PanelMenu(discord.ui.View):
     def __init__(self):
@@ -206,8 +204,8 @@ class PanelMenu(discord.ui.View):
     async def show_log(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.response.defer(ephemeral=True)
-        log_lines = read_last_lines(log_file_path, 15)
-        await interaction.followup.send(f"```{log_lines}```", ephemeral=True)
+        await interaction.followup.send("This feature is under development.", ephemeral=True)
+        # TODO: send log file
 
 #* Check for DST updates
     @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, row=2, custom_id="check")
@@ -231,7 +229,6 @@ tree = app_commands.CommandTree(client)
 async def panel(interaction: discord.Interaction):
     await interaction.response.send_message("Choose your desired action.", view=PanelMenu())
 
-
 @tree.command(
     name="get_vm_info",
     description="Gets info about the virtual machine.",
@@ -240,37 +237,29 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     ip, uptime, cpu, ram, disk = get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
-
+@tree.command(
+    name="chat",
+    description="continuously prints the chat log.",
+    guild=discord.Object(id=current_id),)
+async def chat(interaction: discord.Interaction):
+    await interaction.response.send_message("This feature is under development.", ephemeral=True)
+    print_chat_log()
 
 
 #***************** General Use Functions *****************
-#return last x lines from file as a string
-def read_last_lines(file_name, line_count=10):
-    with open(file_name) as f:
-        lines = f.readlines()
-        f.close()
-    return "".join(lines[-line_count:])
+def get_chat_log_path(cluster_name, beta=False):
+    if beta:
+        return f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}/Master/server_chat_log.txt"
+    else:
+        return f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}/Master/server_chat_log.txt"
+    
+def get_server_log_path(cluster_name, beta=False):
+    if beta:
+        return f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}/Master/server_log.txt"
+    else:
+        return f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}/Master/server_log.txt"
 
-#find text string in the last line of the log file, return false if not found
-def check_log(log_file_path):
-    with open(log_file_path) as f:
-        lines = f.readlines()
-        f.close()
-    #if the log file is empty return false
-    if len(lines) == 0:
-        return False
-    return lines[-1].find(not_running_text) != -1
 
-#trim the log file to the last 100 lines
-def trim_log(log_file_path):
-    with open(log_file_path) as f:
-        lines = f.readlines()
-        f.close()
-    if len(lines) > 100:
-        with open(log_file_path, "w") as f:
-            f.writelines(lines[-100:])
-            f.close()
-    return
 
 #get key information about the vm
 #NOTE: This is built around an ubuntu vm so you might have to edit the text processing before deployment
@@ -325,20 +314,24 @@ def check_for_updates():
     else:
         return latest_version != game_version
 
-
+async def print_chat_log():
+    global cluster_name
+    if cluster_name == "":
+        return
+    global is_beta_server
+    path = ""
+    if is_beta_server:
+        path = get_chat_log_path(cluster_name, beta=True)
+    else:
+        path = get_chat_log_path(cluster_name)
+    f = open(path, "r")
+    while True:
+        line = f.readline()
+        if not line:
+            await client.get_channel(chat_log_channel).send(line)
+        time.sleep(0.1)
 
 #***************** Tasks *****************
-#automatically start the server if it is not running
-@tasks.loop(seconds=600)
-async def check_server():
-    if check_log(log_file_path):
-        print("Server shutdown detected. Starting server...")
-        process = subprocess.Popen([start_server_path])
-        process.wait()
-    else: 
-        trim_log(log_file_path)
-        print("Server is running, trimming log file.")
-
 
 
 #********** Events **********
