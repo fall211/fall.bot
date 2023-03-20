@@ -91,7 +91,7 @@ class PanelMenu(discord.ui.View):
 
         await interaction.response.defer(ephemeral=True)
         global is_beta_server, game_version, beta_game_version, cluster_name
-        process = subprocess.Popen([start_server_path, cluster_name, is_beta_server])
+        process = subprocess.Popen([start_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server startup initated...", ephemeral=True)
         process.wait()
         if is_beta_server:
@@ -132,7 +132,7 @@ class PanelMenu(discord.ui.View):
 
         await interaction.response.defer(ephemeral=True)
         global is_beta_server, game_version, beta_game_version, cluster_name
-        process = subprocess.Popen([restart_server_path, cluster_name, is_beta_server])
+        process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
         process.wait()
         if is_beta_server:
@@ -329,7 +329,6 @@ async def send_chat_log():
     count = sum(1 for i in cf)
     cf.close()
 
-    print(count, previous_chat_log_count)
     if count > previous_chat_log_count:
         with open(path, "r") as f:
             lines = f.readlines(-count+previous_chat_log_count)
