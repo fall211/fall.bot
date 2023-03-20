@@ -329,6 +329,7 @@ async def print_chat_log():
         line = f.readline()
         if not line:
             await client.get_channel(chat_log_channel).send(line)
+            print(line)
         time.sleep(0.1)
 
 #***************** Tasks *****************
