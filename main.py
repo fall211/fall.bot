@@ -323,9 +323,9 @@ async def send_chat_log():
         f.close()
     if count > previous_chat_log_count:
         with open(path, "r") as f:
-            for i, line in enumerate(f):
-                if i > previous_chat_log_count:
-                    await chat_log_channel.send(line)
+            lines = f.readlines()
+            for i in range(previous_chat_log_count, count):
+                await client.get_channel(chat_log_channel).send(lines[i])
         previous_chat_log_count = count
         f.close()
 
