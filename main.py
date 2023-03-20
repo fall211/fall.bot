@@ -192,11 +192,11 @@ class PanelMenu(discord.ui.View):
         except asyncio.TimeoutError:
             await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
         else:
-            cluster_name = msg.content
-            if cluster_name.lower() == "cancel":
+            if msg.content.lower() == "cancel":
                 await interaction.followup.send("Cluster change cancelled.", ephemeral=True)
                 await msg.delete()
                 return
+            cluster_name = msg.content
             await interaction.followup.send(f"Bot now accessing cluster {cluster_name}", ephemeral=True)
             await msg.delete()
             return
