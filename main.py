@@ -75,7 +75,7 @@ class MyClient(discord.Client):
 class PanelMenu(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-        self.cooldown = commands.CooldownMapping.from_cooldown(1,15, commands.BucketType.default)
+        self.cooldown = commands.CooldownMapping.from_cooldown(1,5, commands.BucketType.default)
 
 #***************** Buttons *****************
 
@@ -89,10 +89,10 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
+        global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([start_server_path, cluster_name, is_beta_server])
         msg = await interaction.followup.send("Server startup initated...", ephemeral=True)
         process.wait()
-        global is_beta_server, game_version, beta_game_version
         if is_beta_server:
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
         else:
@@ -124,10 +124,10 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
+        global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([restart_server_path, cluster_name, is_beta_server])
         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
         process.wait()
-        global is_beta_server, game_version, beta_game_version
         if is_beta_server:
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
         else:
@@ -179,6 +179,7 @@ class PanelMenu(discord.ui.View):
         if retry:
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
         
+        global cluster_name
         await interaction.response.defer(ephemeral=True)
         await interaction.response.send("Currently accessing cluster: " + cluster_name, ephemeral=True)
         await interaction.followup.send("What is the name of the cluster you want to access? (case sensitive)", ephemeral=True)
@@ -191,7 +192,6 @@ class PanelMenu(discord.ui.View):
         except asyncio.TimeoutError:
             await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
         else:
-            global cluster_name
             cluster_name = msg.content
             await interaction.followup.send(f"Bot now accessing cluster {cluster_name}", ephemeral=True)
             await msg.delete()
