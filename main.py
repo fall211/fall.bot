@@ -24,7 +24,7 @@ not_running_text = "steam@instance-dst"
 allowed_servers = [server_id, test_id]
 test_channels = [test_channel]
 is_beta_server = False
-cluster_name = "Cluster_1"
+cluster_name = "Wilson"
 game_version = 500000
 beta_game_version = 500000
 
