@@ -139,7 +139,7 @@ class PanelMenu(discord.ui.View):
         global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
-        process.wait(timeout=100)
+        process.wait()
         if is_beta_server:
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
         else:
