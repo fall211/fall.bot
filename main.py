@@ -70,6 +70,9 @@ class MyClient(discord.Client):
         game_version = fs.get_latest_update_info_from_dict(beta=False)
         beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
 
+        global previous_chat_log_count, cluster_name
+        previous_chat_log_count = get_log_file_length(cluster_name, is_beta_server)
+
         send_chat_log.start()
 
 
@@ -134,7 +137,7 @@ class PanelMenu(discord.ui.View):
         global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
-        process.wait()
+        process.wait(timeout=100)
         if is_beta_server:
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
         else:
@@ -319,21 +322,29 @@ def check_for_updates():
     else:
         return latest_version != game_version
 
+def get_log_file_length(cluster_name, is_beta_server):
+    path = get_server_log_path(cluster_name, is_beta_server)
+    f = open(path, 'rb')
+    len = sum(1 for i in f)
+    f.close()
+    return len
+
+
 
 #***************** Tasks *****************
 @tasks.loop(seconds=5)
 async def send_chat_log():
     global cluster_name, is_beta_server, chat_log_channel, previous_chat_log_count
     path = get_chat_log_path(cluster_name, is_beta_server)
-    cf = open(path, 'rb')
-    count = sum(1 for i in cf)
-    cf.close()
+    count = get_log_file_length(cluster_name, is_beta_server)
 
     if count > previous_chat_log_count:
         with open(path, "r") as f:
             lines = f.readlines()
             for i in range(count - previous_chat_log_count):
-                await client.get_channel(chat_log_channel).send(lines[-(count - previous_chat_log_count - i)])
+                line = lines[-(count - previous_chat_log_count - i)]
+                line = line[12:]
+                await client.get_channel(chat_log_channel).send(line)
         previous_chat_log_count = count
         f.close()
 
