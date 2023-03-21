@@ -124,28 +124,28 @@ class PanelMenu(discord.ui.View):
         global previous_chat_log_count
         previous_chat_log_count = 0
 
-#* Restart server
-    @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.blurple, row=1, custom_id="restart")
-    async def restart_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
+# #* Restart server
+#     @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.blurple, row=1, custom_id="restart")
+#     async def restart_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        bucket = self.cooldown.get_bucket(interaction.message)
-        retry = bucket.update_rate_limit()
-        if retry:
-            return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
+#         bucket = self.cooldown.get_bucket(interaction.message)
+#         retry = bucket.update_rate_limit()
+#         if retry:
+#             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
-        await interaction.response.defer(ephemeral=True)
-        global is_beta_server, game_version, beta_game_version, cluster_name
-        process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
-        msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
-        process.wait(timeout=100)
-        if is_beta_server:
-            beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
-        else:
-            game_version = fs.get_latest_update_info_from_dict(beta=False)
-        await msg.edit(content="Server will soon be online.")
+#         await interaction.response.defer(ephemeral=True)
+#         global is_beta_server, game_version, beta_game_version, cluster_name
+#         process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
+#         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
+#         process.wait(timeout=100)
+#         if is_beta_server:
+#             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
+#         else:
+#             game_version = fs.get_latest_update_info_from_dict(beta=False)
+#         await msg.edit(content="Server will soon be online.")
 
-        global previous_chat_log_count
-        previous_chat_log_count = 0
+#         global previous_chat_log_count
+#         previous_chat_log_count = 0
 
 #* Change between beta and live server
     @discord.ui.button(label="Change Server", style=discord.ButtonStyle.gray, row=2, custom_id="change")
