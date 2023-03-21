@@ -10,6 +10,7 @@ from discord.ext import commands, tasks
 from key import key_fallBot, key_tBot, server_id, test_id, test_channel
 import forum_scraper as fs
 
+
 #********** File Paths **********
 
 start_server_path = "/home/steam/start_server.sh"
@@ -22,6 +23,7 @@ restart_server_path = "/home/steam/restart_server.sh"
 #********** Variables **********
 not_running_text = "steam@instance-dst"
 allowed_servers = [server_id, test_id]
+bot_channel_ids = allowed_servers
 test_channels = [test_channel]
 is_beta_server = False
 cluster_name = "Wilson"
@@ -34,10 +36,10 @@ previous_chat_log_count = 0
 
 
 #! Change these before deployment.
-current_id = server_id
 current_key = key_fallBot
-bot_channel_ids = allowed_servers
-chat_log_channel = 1087449487376666624
+
+current_id = server_id if current_key == key_fallBot else test_id
+chat_log_channel = 1087449487376666624 if current_key == key_fallBot else 1042213192383877263
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -53,6 +55,7 @@ class MyClient(discord.Client):
 
         if not self.added:
             self.add_view(PanelMenu())
+            # self.add_view(BranchMenu())
 
         async for guild in client.fetch_guilds():
             if guild.id not in allowed_servers:
@@ -81,7 +84,6 @@ class PanelMenu(discord.ui.View):
         super().__init__(timeout=None)
         self.cooldown = commands.CooldownMapping.from_cooldown(1,5, commands.BucketType.default)
 
-#***************** Buttons *****************
 
 #* Start Server
     @discord.ui.button(label="Start Server", style=discord.ButtonStyle.success, row=1, custom_id="start")
@@ -124,103 +126,28 @@ class PanelMenu(discord.ui.View):
         global previous_chat_log_count
         previous_chat_log_count = 0
 
-# #* Restart server
-#     @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.blurple, row=1, custom_id="restart")
-#     async def restart_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
+#* Restart server
+    @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.blurple, row=1, custom_id="restart")
+    async def restart_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-#         bucket = self.cooldown.get_bucket(interaction.message)
-#         retry = bucket.update_rate_limit()
-#         if retry:
-#             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
-
-#         await interaction.response.defer(ephemeral=True)
-#         global is_beta_server, game_version, beta_game_version, cluster_name
-#         process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
-#         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
-#         process.wait(timeout=100)
-#         if is_beta_server:
-#             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
-#         else:
-#             game_version = fs.get_latest_update_info_from_dict(beta=False)
-#         await msg.edit(content="Server will soon be online.")
-
-#         global previous_chat_log_count
-#         previous_chat_log_count = 0
-
-#* Change between beta and live server
-    @discord.ui.button(label="Change Server", style=discord.ButtonStyle.gray, row=2, custom_id="change")
-    async def change_server(self, interaction: discord.Interaction, button: discord.ui.Button):
         bucket = self.cooldown.get_bucket(interaction.message)
         retry = bucket.update_rate_limit()
         if retry:
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
-        
+
         await interaction.response.defer(ephemeral=True)
-        global is_beta_server        
+        global is_beta_server, game_version, beta_game_version, cluster_name
+        process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
+        msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
+        process.wait(timeout=100)
         if is_beta_server:
-            await interaction.followup.send("Bot is currently accessing the beta branch! Are you sure you want to change to the live server? (yes/no)", ephemeral=True)
+            beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
         else:
-            await interaction.followup.send("Bot is currently accessing the live branch! Are you sure you want to change to the beta server? (yes/no)", ephemeral=True)
+            game_version = fs.get_latest_update_info_from_dict(beta=False)
+        await msg.edit(content="Server will soon be online.")
 
-        def check(m):
-            return m.author == interaction.user and m.channel == interaction.channel
-        
-        try:
-            msg = await client.wait_for('message', check=check, timeout=15.0)
-        except asyncio.TimeoutError:
-            await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
-        else:
-            if msg.content.lower() == 'yes' or msg.content.lower() == 'y':
-                is_beta_server = not is_beta_server
-                if is_beta_server:
-                    await interaction.followup.send("Bot now accessing beta server", ephemeral=True)
-                    await client.change_presence(activity=discord.Game(name="Beta Don't Starve Together"))
-                else:
-                    await interaction.followup.send("Bot now accessing live server", ephemeral=True)
-                    await client.change_presence(activity=discord.Game(name="Don't Starve Together"))
-            else:
-                await interaction.followup.send("Server change cancelled.", ephemeral=True)
-            
-            await msg.delete()
-            return
-
-#* Change the cluster name
-    @discord.ui.button(label="Change Cluster", style=discord.ButtonStyle.gray, row=2, custom_id="cluster")
-    async def change_cluster(self, interaction: discord.Interaction, button: discord.ui.Button):
-        bucket = self.cooldown.get_bucket(interaction.message)
-        retry = bucket.update_rate_limit()
-        if retry:
-            return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
-        
-        global cluster_name
-        await interaction.response.defer(ephemeral=True)
-        await interaction.followup.send("Currently accessing cluster: " + cluster_name, ephemeral=True)
-        await interaction.followup.send("What is the name of the cluster you want to access? (case sensitive).\n\"cancel\" to cancel.", ephemeral=True)
-
-        def check(m):
-            return m.author == interaction.user and m.channel == interaction.channel
-        
-        try:
-            msg = await client.wait_for('message', check=check, timeout=15.0)
-        except asyncio.TimeoutError:
-            await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
-        else:
-            if msg.content.lower() == "cancel":
-                await interaction.followup.send("Cluster change cancelled.", ephemeral=True)
-                await msg.delete()
-                return
-            cluster_name = msg.content
-            await interaction.followup.send(f"Bot now accessing cluster {cluster_name}", ephemeral=True)
-            await msg.delete()
-            return
-
-#* Show server log
-    @discord.ui.button(label="Show Server Log" ,style=discord.ButtonStyle.gray, row=2, custom_id="log")
-    async def show_log(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        await interaction.response.defer(ephemeral=True)
-        await interaction.followup.send("This feature is under development.", ephemeral=True)
-        # TODO: send log file
+        global previous_chat_log_count
+        previous_chat_log_count = 0
 
 #* Check for DST updates
     @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, row=2, custom_id="check")
@@ -232,6 +159,9 @@ class PanelMenu(discord.ui.View):
         else:
             await interaction.followup.send("No updates available.", ephemeral=True)
 
+
+
+
 #***************** Main *****************
 client = MyClient()
 tree = app_commands.CommandTree(client)
@@ -242,7 +172,7 @@ tree = app_commands.CommandTree(client)
     description="Opens the server control panel.", 
     guild=discord.Object(id=current_id),)
 async def panel(interaction: discord.Interaction):
-    await interaction.response.send_message("Choose your desired action.", view=PanelMenu())
+    await interaction.response.send_message(view=PanelMenu())
 
 @tree.command(
     name="get_vm_info",
@@ -252,6 +182,60 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     ip, uptime, cpu, ram, disk = get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
+@tree.command(
+    name="change_branch",
+    description="Changes the branch of the server.",
+    guild=discord.Object(id=current_id),)
+async def change_branch(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    global is_beta_server
+    await interaction.followup.send(f"Current branch is {'beta' if is_beta_server else 'live'}\nAre you sure you want to change the branch? (y/n)", ephemeral=True)
+    
+    def check(m):
+        return m.author == interaction.user and m.channel == interaction.channel
+    
+    try:
+        msg = await client.wait_for('message', check=check, timeout=15.0)
+    except asyncio.TimeoutError:
+        await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
+        return
+    if msg.content.lower() == "n":
+        await interaction.followup.send("Branch change cancelled.", ephemeral=True)
+        await msg.delete()
+        return
+    await msg.delete()
+    is_beta_server = not is_beta_server
+    await interaction.followup.send(f"Server branch changed to {'beta' if is_beta_server else 'live'}", ephemeral=True)
+
+    game_name = "Beta Don't Starve Together" if is_beta_server else "Don't Starve Together"
+    await client.change_presence(activity=discord.Game(name=f"{game_name}"))
+
+@tree.command(
+    name="change_cluster",
+    description="Changes the cluster name.",
+    guild=discord.Object(id=current_id),)
+async def change_cluster(interaction: discord.Interaction):
+    
+    global cluster_name
+    await interaction.response.defer(ephemeral=True)
+    await interaction.followup.send(f"Currently accessing cluster: {cluster_name}\nWhat is the name of the cluster you want to access? (case sensitive).\n\"cancel\" to cancel.", ephemeral=True)
+
+    def check(m):
+        return m.author == interaction.user and m.channel == interaction.channel
+    
+    try:
+        msg = await client.wait_for('message', check=check, timeout=15.0)
+    except asyncio.TimeoutError:
+        await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
+    else:
+        if msg.content.lower() == "cancel":
+            await interaction.followup.send("Cluster change cancelled.", ephemeral=True)
+            await msg.delete()
+            return
+        cluster_name = msg.content
+        await interaction.followup.send(f"Bot now accessing cluster {cluster_name}", ephemeral=True)
+        await msg.delete()
+        return
 
 
 #***************** General Use Functions *****************
@@ -323,7 +307,7 @@ def check_for_updates():
         return latest_version != game_version
 
 def get_log_file_length(cluster_name, is_beta_server):
-    path = get_server_log_path(cluster_name, is_beta_server)
+    path = get_chat_log_path(cluster_name, is_beta_server)
     f = open(path, 'rb')
     len = sum(1 for i in f)
     f.close()
