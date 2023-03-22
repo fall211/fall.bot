@@ -345,10 +345,11 @@ async def on_message(message):
     
     if message.channel.id == chat_log_channel:
         print(f"Sending message to screen: {message.author}: {message.content}")
-        full_message_to_announce = f"\"[Discord] {message.author}: {message.content}\""
-        screen_cmd = f"screen -S s -X stuff \"c_announce({full_message_to_announce})\"^M"
+        full_message_to_announce = f"[Discord] {message.author}: {message.content}"
+        screen_cmd = f"screen -S s -X stuff \"c_announce({full_message_to_announce})^M\""
         subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
         await message.delete()
+
 
 
 #********** Run **********
