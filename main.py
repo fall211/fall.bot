@@ -342,6 +342,10 @@ async def on_guild_join(guild):
 async def on_message(message):
     if message.author == client.user:
         return
+    
+    if message.channel.id == chat_log_channel:
+            screen_cmd = f'screen -S s -X stuff "[Discord] {message.author}: {message.content}\\n"'
+            subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
 
 
 #********** Run **********
