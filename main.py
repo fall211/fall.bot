@@ -328,9 +328,9 @@ async def send_chat_log():
             for i in range(count - previous_chat_log_count):
                 line = lines[-(count - previous_chat_log_count - i)]
                 line = line[12:]
-                # if the line starts with [Announcement] then strip that part off
-                if line.startswith("[Announcement]"):
-                    line = line[15:]
+                # if the line starts with [Announcement] [Discord] then dont send it to discord
+                if line.startswith("[Announcement] [Discord]"):
+                    continue
                 await client.get_channel(chat_log_channel).send(line)
         previous_chat_log_count = count
         f.close()
@@ -350,7 +350,6 @@ async def on_message(message):
         full_message_to_announce = f"[Discord] {message.author}: {message.content}"
         screen_cmd = f'screen -S s -X stuff "c_announce(\'{full_message_to_announce}\')^M"'
         subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
-        await message.delete()
 
 
 
