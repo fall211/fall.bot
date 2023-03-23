@@ -123,8 +123,6 @@ class PanelMenu(discord.ui.View):
         process.wait()
         await msg.edit(content="Server shutdown completed.")
 
-        global previous_chat_log_count
-        previous_chat_log_count = 0
 
 #* Restart server
     @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.blurple, row=1, custom_id="restart")
