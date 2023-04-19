@@ -282,10 +282,10 @@ async def ccc(interaction: discord.Interaction):
 async def toggle_ccc_task(interaction: discord.Interaction):
     if send_ccc_prompt.is_running():
         send_ccc_prompt.cancel()
-        await interaction.response.send_message("Shenanigans stopped.", ephemeral=True)
+        await interaction.response.send_message("Shenanigans stopped.", ephemeral=False)
     else:
         send_ccc_prompt.start()
-        await interaction.response.send_message("Shenanigans started.", ephemeral=True)
+        await interaction.response.send_message(f"Shenanigans started. Current target is {target}. Use /change_target to change the target.", ephemeral=False)
 
 @tree.command(
     name="change_target",
@@ -434,7 +434,8 @@ async def on_guild_join(guild):
 @client.event
 async def on_message(message):
     if message.author == client.user:
-        return
+        if not message.content.startswith("Shenanigans"):
+            return
     
     if message.channel.id == chat_log_channel:
         full_message_to_announce = f"[Discord] {message.author}: {message.content}"
