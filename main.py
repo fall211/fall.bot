@@ -36,9 +36,9 @@ previous_chat_log_count = 0
 
 target = "fall"
 ccc_commands = {
-    "Increase Player Size": f"f_increaseScale({target})",
-    "Reset Player Size": f"f_resetScale({target})",
-    "Spawn a Random Mob": f"f_spawnRandomMob({target})",
+    "Increase Player Size": f"f_increaseScale(\'{target}\')",
+    "Reset Player Size": f"f_resetScale(\'{target}\')",
+    "Spawn a Random Mob": f"f_spawnRandomMob(\'{target}\')",
 }
 
 
@@ -271,7 +271,7 @@ async def change_cluster(interaction: discord.Interaction):
 async def ccc(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=False)
     view = CCCMenu()
-    message = await interaction.followup.send("CCC Menu", view=view)
+    message = await interaction.followup.send(f"Quick! Pick a consequence for {target}!", view=view)
     await view.wait()
     await message.delete()
 
@@ -421,7 +421,7 @@ async def send_chat_log():
 @tasks.loop(seconds=300)
 async def send_ccc_prompt():
     view = CCCMenu()
-    message = await client.get_channel(chat_log_channel).send("CCC Menu", view=view)
+    message = await client.get_channel(chat_log_channel).send(f"Quick! Pick a consequence for {target}!", view=view)
     await view.wait()
     await message.delete()
 
