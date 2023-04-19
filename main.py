@@ -309,7 +309,7 @@ async def change_target(interaction: discord.Interaction):
             await msg.delete()
             return
         target = msg.content
-        await interaction.followup.send(f"Shenanigans now targeting {target}", ephemeral=True)
+        await interaction.followup.send(f"Shenanigans now targeting {target}", ephemeral=False)
         await msg.delete()
         return
 
