@@ -2,6 +2,7 @@ import asyncio
 import subprocess
 import time
 import requests
+from random import sample
 
 import discord
 from discord import app_commands
@@ -16,6 +17,7 @@ import forum_scraper as fs
 start_server_path = "/home/steam/start_server.sh"
 stop_server_path = "/home/steam/stop_server.sh"
 restart_server_path = "/home/steam/restart_server.sh"
+ccc_bash_path = "/home/steam/ccc.sh"
 
 
 
@@ -32,7 +34,12 @@ beta_game_version = 500000
 
 previous_chat_log_count = 0
 
-
+target = "fall"
+ccc_commands = {
+    "Increase Player Size": f"f_increaseScale({target})",
+    "Reset Player Size": f"f_resetScale({target})",
+    "Spawn a Random Mob": f"f_spawnRandomMob({target})",
+}
 
 
 #! Change these before deployment.
@@ -55,7 +62,6 @@ class MyClient(discord.Client):
 
         if not self.added:
             self.add_view(PanelMenu())
-            # self.add_view(BranchMenu())
 
         async for guild in client.fetch_guilds():
             if guild.id not in allowed_servers:
@@ -65,24 +71,26 @@ class MyClient(discord.Client):
 
         global is_beta_server
         global game_version, beta_game_version
-        if is_beta_server:
-            await client.change_presence(activity=discord.Game(name="Beta Don't Starve Together"))
-        else:
-            await client.change_presence(activity=discord.Game(name="Don't Starve Together"))
-        
-        game_version = fs.get_latest_update_info_from_dict(beta=False)
-        beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
+        if current_key == key_fallBot:
+            if is_beta_server:
+                await client.change_presence(activity=discord.Game(name="Beta Don't Starve Together"))
+            else:
+                await client.change_presence(activity=discord.Game(name="Don't Starve Together"))
+            
+            game_version = fs.get_latest_update_info_from_dict(beta=False)
+            beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
 
-        global previous_chat_log_count, cluster_name
-        previous_chat_log_count = get_log_file_length(cluster_name, is_beta_server)
+            global previous_chat_log_count, cluster_name
+            previous_chat_log_count = get_log_file_length(cluster_name, is_beta_server)
 
-        send_chat_log.start()
+            send_chat_log.start()
 
 
 class PanelMenu(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
         self.cooldown = commands.CooldownMapping.from_cooldown(1,5, commands.BucketType.default)
+
 
 
 #* Start Server
@@ -157,6 +165,27 @@ class PanelMenu(discord.ui.View):
         else:
             await interaction.followup.send("No updates available.", ephemeral=True)
 
+class CCCMenu(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=15)
+
+        sampled_commands = sample(ccc_commands, 3)
+
+        for command in sampled_commands:
+            button = discord.ui.Button(label=f"{command}", style=discord.ButtonStyle.grey, custom_id=f"{command}")
+            button.callback = lambda _, btn = button: self.on_button_click(_, btn)
+            self.add_item(button)
+        
+    async def on_button_click(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        ccc = button.custom_id
+        command = ccc_commands[ccc]
+        print(f"Running command: {command}")
+        screen_cmd = f'screen -S s -X stuff "{command}^M"'
+        subprocess.run(screen_cmd, shell=True)  # runs the command in the screen session
+
+        self.stop()
+        
 
 
 
@@ -235,6 +264,64 @@ async def change_cluster(interaction: discord.Interaction):
         await msg.delete()
         return
 
+@tree.command(
+    name="ccc",
+    description="opens the CCC discord-sided menu",
+    guild=discord.Object(id=current_id),)
+async def ccc(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=False)
+    view = CCCMenu()
+    message = await interaction.followup.send("CCC Menu", view=view)
+    await view.wait()
+    await message.delete()
+
+@tree.command(
+    name="toggle_shenanigans",
+    description="Starts/stops shenanigans.",
+    guild=discord.Object(id=current_id),)
+async def toggle_ccc_task(interaction: discord.Interaction):
+    if send_ccc_prompt.is_running():
+        send_ccc_prompt.cancel()
+        await interaction.response.send_message("Shenanigans stopped.", ephemeral=True)
+    else:
+        send_ccc_prompt.start()
+        await interaction.response.send_message("Shenanigans started.", ephemeral=True)
+
+@tree.command(
+    name="change_target",
+    description="Changes the target of the CCC task.",
+    guild=discord.Object(id=current_id),)
+async def change_target(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    global target
+    await interaction.followup.send(f"Currently targeting: {target}\nWhat is the name of the player you want to target? (case sensitive).\n\"cancel\" to cancel.", ephemeral=True)
+
+    def check(m):
+        return m.author == interaction.user and m.channel == interaction.channel
+    
+    try:
+        msg = await client.wait_for('message', check=check, timeout=15.0)
+    except asyncio.TimeoutError:
+        await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
+    else:
+        if msg.content.lower() == "cancel":
+            await interaction.followup.send("Target change cancelled.", ephemeral=True)
+            await msg.delete()
+            return
+        target = msg.content
+        await interaction.followup.send(f"Shenanigans now targeting {target}", ephemeral=True)
+        await msg.delete()
+        return
+
+@tree.command(
+    name="list_players",
+    description="Lists all players on the server.",
+    guild=discord.Object(id=current_id),)
+async def list_players(interaction: discord.Interaction):
+    command = "f_announcePlayers()"
+    screen_cmd = f'screen -S s -X stuff "{command}^M"'
+    subprocess.run(screen_cmd, shell=True)  # runs the command in the screen session
+
 
 #***************** General Use Functions *****************
 def get_chat_log_path(cluster_name, beta=False):
@@ -248,8 +335,6 @@ def get_server_log_path(cluster_name, beta=False):
         return f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}/Master/server_log.txt"
     else:
         return f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}/Master/server_log.txt"
-
-
 
 #get key information about the vm
 #NOTE: This is built around an ubuntu vm so you might have to edit the text processing before deployment
@@ -332,6 +417,13 @@ async def send_chat_log():
                 await client.get_channel(chat_log_channel).send(line)
         previous_chat_log_count = count
         f.close()
+
+@tasks.loop(seconds=300)
+async def send_ccc_prompt():
+    view = CCCMenu()
+    message = await client.get_channel(chat_log_channel).send("CCC Menu", view=view)
+    await view.wait()
+    await message.delete()
 
 #********** Events **********
 @client.event
