@@ -169,7 +169,7 @@ class CCCMenu(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=15)
 
-        sampled_commands = sample(ccc_commands, 3)
+        sampled_commands = sample(list(ccc_commands), 3)
 
         for command in sampled_commands:
             button = discord.ui.Button(label=f"{command}", style=discord.ButtonStyle.grey, custom_id=f"{command}")
