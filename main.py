@@ -293,13 +293,12 @@ async def change_cluster(interaction: discord.Interaction):
     description="opens the CCC discord-sided menu",
     guild=discord.Object(id=current_id),)
 async def ccc(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=False)
     global is_server_running
     if not is_server_running:
-        await interaction.followup.send("Server is not running.", ephemeral=True)
+        await interaction.response.send_message("Server is not running.", ephemeral=True)
         return
     view = CCCMenu()
-    message = await interaction.followup.send(f"Quick! Pick a consequence for {target}!", view=view)
+    message = await interaction.response.send_message(f"Quick! Pick a consequence for {target}!", view=view)
     await view.wait()
     await message.delete()
 
@@ -314,17 +313,17 @@ async def toggle_ccc_task(interaction: discord.Interaction):
 
         if send_ccc_prompt.is_running():
             send_ccc_prompt.stop()
-            await interaction.response.send_message("Shenanigans stopped.", ephemeral=False)
+            await interaction.response.send_message("Shenanigans stopped.")
             return
 
         await interaction.response.send_message("Server is not running.", ephemeral=True)
     elif not send_ccc_prompt.is_running():
         send_ccc_prompt.start()
-        await interaction.response.send_message(f"Shenanigans started. Current target is {target}.", ephemeral=False)
+        await interaction.response.send_message(f"Shenanigans started. Current target is {target}.")
         await client.get_channel(interaction.channel_id).send("Use /change_target to change the target.")
     else:
         send_ccc_prompt.stop()
-        await interaction.response.send_message("Shenanigans stopped.", ephemeral=False)
+        await interaction.response.send_message("Shenanigans stopped.")
 
 @tree.command(
     name="change_target",
@@ -333,7 +332,7 @@ async def toggle_ccc_task(interaction: discord.Interaction):
 async def change_target_parameter(interaction: discord.Interaction, player: str):
     global target
     target = player
-    await interaction.response.send_message(f"Shenanigans now targeting {target}", ephemeral=False)
+    await interaction.response.send_message(f"Shenanigans now targeting {target}")
 
 
 @tree.command(
@@ -439,7 +438,7 @@ async def send_chat_log():
             for i in range(count - previous_chat_log_count):
                 line = lines[-(count - previous_chat_log_count - i)]
                 line = line[12:]
-                if line.find("] [Discord]") != -1:
+                if line.find("[Discord]") != -1:
                     continue
                 await client.get_channel(chat_log_channel).send(line)
         previous_chat_log_count = count
@@ -475,11 +474,11 @@ async def on_message(message):
         
         full_message_to_announce = ""
         if message.author == client.user:
-            full_message_to_announce = message.content
+            full_message_to_announce = f"[Discord] {message.content}"
         else:
             full_message_to_announce = f"[Discord] {message.author}: {message.content}"
 
-        screen_cmd = f'screen -S s -X stuff "c_announce(\'{full_message_to_announce}\')^M"'
+        screen_cmd = f'screen -S s -X stuff "TheNet:SystemMessage(\'{full_message_to_announce}\')^M"'
         subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
 
 
