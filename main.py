@@ -22,7 +22,6 @@ restart_server_path = "/home/steam/restart_server.sh"
 
 
 #********** Variables **********
-not_running_text = "steam@instance-dst"
 allowed_servers = [server_id, test_id]
 bot_channel_ids = allowed_servers
 test_channels = [test_channel]
@@ -73,6 +72,8 @@ class MyClient(discord.Client):
 
         await client.change_presence(activity=discord.Activity(name="user commands", type=discord.ActivityType.listening))
 
+
+
         if current_key == key_fallBot:
             
             game_version = fs.get_latest_update_info_from_dict(beta=False)
@@ -81,7 +82,9 @@ class MyClient(discord.Client):
             global previous_chat_log_count, cluster_name
             previous_chat_log_count = get_log_file_length(cluster_name, is_beta_server)
 
-            send_chat_log.start()
+            if previous_chat_log_count > 0:
+                send_chat_log.start()
+
 
 
 class PanelMenu(discord.ui.View):
