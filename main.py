@@ -21,7 +21,7 @@ restart_server_path = "/home/steam/restart_server.sh"
 
 
 
-#********** Variables **********
+#********** Global Variables **********
 allowed_servers = [server_id, test_id]
 bot_channel_ids = allowed_servers
 test_channels = [test_channel]
@@ -31,6 +31,7 @@ game_version = 500000
 beta_game_version = 500000
 
 previous_chat_log_count = 0
+is_server_running = False
 
 target = "fall"
 ccc_commands = {
@@ -67,23 +68,21 @@ class MyClient(discord.Client):
 
         fs.update_dict()
 
-        global is_beta_server
-        global game_version, beta_game_version
+        global is_beta_server, game_version, beta_game_version
 
         await client.change_presence(activity=discord.Activity(name="user commands", type=discord.ActivityType.listening))
-
-
 
         if current_key == key_fallBot:
             
             game_version = fs.get_latest_update_info_from_dict(beta=False)
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
 
-            global previous_chat_log_count, cluster_name
+            global previous_chat_log_count, cluster_name, is_server_running
             previous_chat_log_count = get_log_file_length(cluster_name, is_beta_server)
 
             if previous_chat_log_count > 0:
                 send_chat_log.start()
+                is_server_running = True
 
 
 
@@ -117,8 +116,9 @@ class PanelMenu(discord.ui.View):
                 
         await msg.edit(content="Server will soon be online.")
 
-        global previous_chat_log_count
+        global previous_chat_log_count, is_server_running
         previous_chat_log_count = 0
+        is_server_running = True
 
         send_chat_log.start()
 
@@ -139,6 +139,8 @@ class PanelMenu(discord.ui.View):
 
         await client.change_presence(activity=discord.Activity(name="user commands", type=discord.ActivityType.listening))
 
+        global is_server_running
+        is_server_running = False
         send_chat_log.stop()
 
 
@@ -225,7 +227,12 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def change_branch(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
-    global is_beta_server
+
+    global is_beta_server, is_server_running
+    if is_server_running:
+        await interaction.followup.send("Server must be offline to change branch.", ephemeral=True)
+        return
+    
     await interaction.followup.send(f"Current branch is {'beta' if is_beta_server else 'live'}\nAre you sure you want to change the branch? (y/n)", ephemeral=True)
     
     def check(m):
@@ -253,7 +260,11 @@ async def change_branch(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def change_cluster(interaction: discord.Interaction):
     
-    global cluster_name
+    global cluster_name, is_server_running
+    if is_server_running:
+        await interaction.response.send_message("Server must be offline to change cluster.", ephemeral=True)
+        return
+    
     await interaction.response.defer(ephemeral=True)
     await interaction.followup.send(f"Currently accessing cluster: {cluster_name}\nWhat is the name of the cluster you want to access? (case sensitive).\n\"cancel\" to cancel.", ephemeral=True)
 
@@ -280,6 +291,10 @@ async def change_cluster(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def ccc(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=False)
+    global is_server_running
+    if not is_server_running:
+        await interaction.followup.send("Server is not running.", ephemeral=True)
+        return
     view = CCCMenu()
     message = await interaction.followup.send(f"Quick! Pick a consequence for {target}!", view=view)
     await view.wait()
@@ -290,14 +305,23 @@ async def ccc(interaction: discord.Interaction):
     description="Starts/stops shenanigans.",
     guild=discord.Object(id=current_id),)
 async def toggle_ccc_task(interaction: discord.Interaction):
-    if send_ccc_prompt.is_running():
-        send_ccc_prompt.stop()
-        await interaction.response.send_message("Shenanigans stopped.", ephemeral=False)
-    else:
+
+    global is_server_running
+    if not is_server_running:
+
+        if send_ccc_prompt.is_running():
+            send_ccc_prompt.stop()
+            await interaction.response.send_message("Shenanigans stopped.", ephemeral=False)
+            return
+
+        await interaction.response.send_message("Server is not running.", ephemeral=True)
+    elif not send_ccc_prompt.is_running():
         send_ccc_prompt.start()
         await interaction.response.send_message(f"Shenanigans started. Current target is {target}.", ephemeral=False)
         await client.get_channel(interaction.channel_id).send("Use /change_target to change the target.")
-
+    else:
+        send_ccc_prompt.stop()
+        await interaction.response.send_message("Shenanigans stopped.", ephemeral=False)
 
 @tree.command(
     name="change_target",
@@ -314,6 +338,10 @@ async def change_target_parameter(interaction: discord.Interaction, player: str)
     description="Lists all players on the server.",
     guild=discord.Object(id=current_id),)
 async def list_players(interaction: discord.Interaction):
+    global is_server_running
+    if not is_server_running:
+        await interaction.response.send_message("Server is not running.", ephemeral=True)
+        return
     await interaction.response.send_message("Getting player list...", ephemeral=True)
     command = "f_announcePlayers()"
     screen_cmd = f'screen -S s -X stuff "{command}^M"'
@@ -335,7 +363,7 @@ def get_server_log_path(cluster_name, beta=False):
 
 #get key information about the vm
 #NOTE: This is built around an ubuntu vm so you might have to edit the text processing before deployment
-    #on different distros
+    #on different machines
 def get_vm_info():
     #get the server's public IP address
     ip = requests.get("https://api.ipify.org").text
@@ -416,6 +444,10 @@ async def send_chat_log():
 
 @tasks.loop(seconds=300)
 async def send_ccc_prompt():
+    if not is_server_running:
+        send_ccc_prompt.stop()
+        return
+    
     view = CCCMenu()
     message = await client.get_channel(chat_log_channel).send(f"Quick! Pick a consequence for {target}!", view=view)
     await view.wait()
@@ -435,7 +467,7 @@ async def on_message(message):
     
     if message.channel.id == chat_log_channel:
 
-        if not send_chat_log.is_running():
+        if not is_server_running:
             return
         
         full_message_to_announce = ""
