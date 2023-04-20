@@ -38,6 +38,9 @@ ccc_commands = {
     "Increase Player Size": f"f_increaseScale(\'{target}\')",
     "Reset Player Size": f"f_resetScale(\'{target}\')",
     "Spawn a Random Mob": f"f_spawnRandomMob(\'{target}\')",
+    "Randomize Health": f"f_randomizeHealth(\'{target}\')",
+    "Randomize Hunger": f"f_randomizeHunger(\'{target}\')",
+    "Randomize Sanity": f"f_randomizeSanity(\'{target}\')",
 }
 
 
