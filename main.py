@@ -17,7 +17,6 @@ import forum_scraper as fs
 start_server_path = "/home/steam/start_server.sh"
 stop_server_path = "/home/steam/stop_server.sh"
 restart_server_path = "/home/steam/restart_server.sh"
-ccc_bash_path = "/home/steam/ccc.sh"
 
 
 
@@ -71,11 +70,10 @@ class MyClient(discord.Client):
 
         global is_beta_server
         global game_version, beta_game_version
+
+        await client.change_presence(activity=discord.Activity(name="user commands", type=discord.ActivityType.listening))
+
         if current_key == key_fallBot:
-            if is_beta_server:
-                await client.change_presence(activity=discord.Game(name="Beta Don't Starve Together"))
-            else:
-                await client.change_presence(activity=discord.Game(name="Don't Starve Together"))
             
             game_version = fs.get_latest_update_info_from_dict(beta=False)
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
@@ -109,12 +107,17 @@ class PanelMenu(discord.ui.View):
         process.wait()
         if is_beta_server:
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
+            await client.change_presence(activity=discord.Game(name="Beta Don't Starve Together"))
         else:
             game_version = fs.get_latest_update_info_from_dict(beta=False)
+            await client.change_presence(activity=discord.Game(name="Don't Starve Together"))
+                
         await msg.edit(content="Server will soon be online.")
 
         global previous_chat_log_count
         previous_chat_log_count = 0
+
+        send_chat_log.start()
 
 #* Stop server
     @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
@@ -130,6 +133,10 @@ class PanelMenu(discord.ui.View):
         msg = await interaction.followup.send("Server shutdown initiated...", ephemeral=True)
         process.wait()
         await msg.edit(content="Server shutdown completed.")
+
+        await client.change_presence(activity=discord.Activity(name="user commands", type=discord.ActivityType.listening))
+
+        send_chat_log.stop()
 
 
 #* Restart server
@@ -281,43 +288,30 @@ async def ccc(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def toggle_ccc_task(interaction: discord.Interaction):
     if send_ccc_prompt.is_running():
-        send_ccc_prompt.cancel()
+        send_ccc_prompt.stop()
         await interaction.response.send_message("Shenanigans stopped.", ephemeral=False)
     else:
         send_ccc_prompt.start()
-        await interaction.response.send_message(f"Shenanigans started. Current target is {target}. Use /change_target to change the target.", ephemeral=False)
+        await interaction.response.send_message(f"Shenanigans started. Current target is {target}.", ephemeral=False)
+        await client.get_channel(interaction.channel_id).send("Use /change_target to change the target.")
+
 
 @tree.command(
     name="change_target",
-    description="Changes the target of the CCC task.",
+    description="Changes the target of shenanigans.",
     guild=discord.Object(id=current_id),)
-async def change_target(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+async def change_target_parameter(interaction: discord.Interaction, player: str):
     global target
-    await interaction.followup.send(f"Currently targeting: {target}\nWhat is the name of the player you want to target? (case sensitive).\n\"cancel\" to cancel.", ephemeral=True)
+    target = player
+    await interaction.response.send_message(f"Shenanigans now targeting {target}", ephemeral=False)
 
-    def check(m):
-        return m.author == interaction.user and m.channel == interaction.channel
-    
-    try:
-        msg = await client.wait_for('message', check=check, timeout=15.0)
-    except asyncio.TimeoutError:
-        await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
-    else:
-        if msg.content.lower() == "cancel":
-            await interaction.followup.send("Target change cancelled.", ephemeral=True)
-            await msg.delete()
-            return
-        target = msg.content
-        await interaction.followup.send(f"Shenanigans now targeting {target}", ephemeral=False)
-        await msg.delete()
-        return
 
 @tree.command(
     name="list_players",
     description="Lists all players on the server.",
     guild=discord.Object(id=current_id),)
 async def list_players(interaction: discord.Interaction):
+    await interaction.response.send_message("Getting player list...", ephemeral=True)
     command = "f_announcePlayers()"
     screen_cmd = f'screen -S s -X stuff "{command}^M"'
     subprocess.run(screen_cmd, shell=True)  # runs the command in the screen session
@@ -411,8 +405,7 @@ async def send_chat_log():
             for i in range(count - previous_chat_log_count):
                 line = lines[-(count - previous_chat_log_count - i)]
                 line = line[12:]
-                # if the line starts with [Announcement] [Discord] then dont send it to discord
-                if line.startswith("[Announcement] [Discord]"):
+                if line.find("] [Discord]") != -1:
                     continue
                 await client.get_channel(chat_log_channel).send(line)
         previous_chat_log_count = count
@@ -434,11 +427,20 @@ async def on_guild_join(guild):
 @client.event
 async def on_message(message):
     if message.author == client.user:
-        if not message.content.startswith("Shenanigans"):
+        if message.content.find("Shenanigans") == -1:
             return
     
     if message.channel.id == chat_log_channel:
-        full_message_to_announce = f"[Discord] {message.author}: {message.content}"
+
+        if not send_chat_log.is_running():
+            return
+        
+        full_message_to_announce = ""
+        if message.author == client.user:
+            full_message_to_announce = message.content
+        else:
+            full_message_to_announce = f"[Discord] {message.author}: {message.content}"
+
         screen_cmd = f'screen -S s -X stuff "c_announce(\'{full_message_to_announce}\')^M"'
         subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
 
