@@ -194,15 +194,24 @@ class CCCMenu(discord.ui.View):
     async def on_button_click(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         ccc = button.custom_id
-        command = ccc_commands[ccc]
-        print(f"Running command: {command}")
-        screen_cmd = f'screen -S s -X stuff "{command}^M"'
-        subprocess.run(screen_cmd, shell=True)  # runs the command in the screen session
+        send_ccc_to_server(target, ccc)
 
         self.stop()
         
 
-
+def send_ccc_to_server(target, ccc):
+    ccc_commands = {
+        "Increase Player Size": f"f_increaseScale(\'{target}\')",
+        "Reset Player Size": f"f_resetScale(\'{target}\')",
+        "Spawn a Random Mob": f"f_spawnRandomMob(\'{target}\')",
+        "Randomize Health": f"f_randomizeHealth(\'{target}\')",
+        "Randomize Hunger": f"f_randomizeHunger(\'{target}\')",
+        "Randomize Sanity": f"f_randomizeSanity(\'{target}\')",
+    }
+    command = ccc_commands[ccc]
+    print(f"Running command: {command}")
+    screen_cmd = f'screen -S s -X stuff "{command}^M"'
+    subprocess.run(screen_cmd, shell=True)  # runs the command in the screen session
 
 #***************** Main *****************
 client = MyClient()
