@@ -298,7 +298,8 @@ async def ccc(interaction: discord.Interaction):
         await interaction.response.send_message("Server is not running.", ephemeral=True)
         return
     view = CCCMenu()
-    message = await interaction.response.send_message(f"Quick! Pick a consequence for {target}!", view=view)
+    await interaction.response.send_message(f"Quick! Pick a consequence for {target}!", view=view, ephemeral=False)
+    message = await interaction.channel.fetch_message(interaction.response.message.id)
     await view.wait()
     await message.delete()
 
