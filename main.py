@@ -122,8 +122,8 @@ class PanelMenu(discord.ui.View):
         global previous_chat_log_count, is_server_running
         previous_chat_log_count = 0
         is_server_running = True
-
-        send_chat_log.start()
+        if send_chat_log.is_running():
+            send_chat_log.restart()
 
 #* Stop server
     @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
@@ -293,7 +293,7 @@ async def change_cluster(interaction: discord.Interaction):
     description="opens the CCC discord-sided menu",
     guild=discord.Object(id=current_id),)
 async def ccc(interaction: discord.Interaction):
-    global is_server_running
+    global is_server_running, target
     if not is_server_running:
         await interaction.response.send_message("Server is not running.", ephemeral=True)
         return
@@ -308,7 +308,7 @@ async def ccc(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def toggle_ccc_task(interaction: discord.Interaction):
 
-    global is_server_running
+    global is_server_running, target
     if not is_server_running:
 
         if send_ccc_prompt.is_running():
