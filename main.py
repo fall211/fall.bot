@@ -26,14 +26,14 @@ allowed_servers = [server_id, test_id]
 bot_channel_ids = allowed_servers
 test_channels = [test_channel]
 is_beta_server = False
-cluster_name = "Wilson"
+cluster_name = "Roots"
 game_version = 500000
 beta_game_version = 500000
 
 previous_chat_log_count = 0
 is_server_running = False
 
-target = "fall"
+target = "NanaCreative"
 ccc_commands = {
     "Increase Player Size": f"f_increaseScale(\'{target}\')",
     "Reset Player Size": f"f_resetScale(\'{target}\')",
@@ -124,6 +124,8 @@ class PanelMenu(discord.ui.View):
         is_server_running = True
         if send_chat_log.is_running():
             send_chat_log.restart()
+        else:
+            send_chat_log.start()
 
 #* Stop server
     @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
@@ -194,24 +196,23 @@ class CCCMenu(discord.ui.View):
     async def on_button_click(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         ccc = button.custom_id
-        send_ccc_to_server(target, ccc)
+
+        ccc_commands = {
+            "Increase Player Size": f"f_increaseScale(\'{target}\')",
+            "Reset Player Size": f"f_resetScale(\'{target}\')",
+            "Spawn a Random Mob": f"f_spawnRandomMob(\'{target}\')",
+            "Randomize Health": f"f_randomizeHealth(\'{target}\')",
+            "Randomize Hunger": f"f_randomizeHunger(\'{target}\')",
+            "Randomize Sanity": f"f_randomizeSanity(\'{target}\')",
+        }
+        
+        command = ccc_commands[ccc]
+        print(f"Running command: {command}")
+        screen_cmd = f'screen -S s -X stuff "{command}^M"'
+        subprocess.run(screen_cmd, shell=True)  # runs the command in the screen session
 
         self.stop()
         
-
-def send_ccc_to_server(target, ccc):
-    ccc_commands = {
-        "Increase Player Size": f"f_increaseScale(\'{target}\')",
-        "Reset Player Size": f"f_resetScale(\'{target}\')",
-        "Spawn a Random Mob": f"f_spawnRandomMob(\'{target}\')",
-        "Randomize Health": f"f_randomizeHealth(\'{target}\')",
-        "Randomize Hunger": f"f_randomizeHunger(\'{target}\')",
-        "Randomize Sanity": f"f_randomizeSanity(\'{target}\')",
-    }
-    command = ccc_commands[ccc]
-    print(f"Running command: {command}")
-    screen_cmd = f'screen -S s -X stuff "{command}^M"'
-    subprocess.run(screen_cmd, shell=True)  # runs the command in the screen session
 
 #***************** Main *****************
 client = MyClient()
@@ -307,10 +308,10 @@ async def ccc(interaction: discord.Interaction):
         await interaction.response.send_message("Server is not running.", ephemeral=True)
         return
     view = CCCMenu()
-    await interaction.response.send_message(f"Quick! Pick a consequence for {target}!", view=view, ephemeral=False)
-    message = await interaction.channel.fetch_message(interaction.response.message.id)
+    message = await interaction.channel.send(f"Quick! Pick a consequence for {target}!", view=view)
     await view.wait()
     await message.delete()
+
 
 @tree.command(
     name="toggle_shenanigans",
