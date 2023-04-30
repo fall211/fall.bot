@@ -83,9 +83,8 @@ class MyClient(discord.Client):
             global previous_chat_log_count, cluster_name, is_server_running
             previous_chat_log_count = get_log_file_length(cluster_name, is_beta_server)
 
-            if previous_chat_log_count > 0:
-                send_chat_log.start()
-                is_server_running = True
+            send_chat_log.start()
+            is_server_running = True
 
 
 
@@ -444,16 +443,20 @@ async def send_chat_log():
     count = get_log_file_length(cluster_name, is_beta_server)
 
     if count > previous_chat_log_count:
-        with open(path, "r") as f:
-            lines = f.readlines()
-            for i in range(count - previous_chat_log_count):
-                line = lines[-(count - previous_chat_log_count - i)]
-                line = line[12:]
-                if line.find("[Discord]") != -1:
-                    continue
-                await client.get_channel(chat_log_channel).send(line)
-        previous_chat_log_count = count
+        text = ""
+        with open(path, "rb") as f:
+            # fix the encoding
+            text = f.decode("utf-8", errors="ignore")
         f.close()
+
+        lines = text.readlines()
+        for i in range(count - previous_chat_log_count):
+            line = lines[-(count - previous_chat_log_count - i)]
+            line = line[12:]
+            if line.find("[Discord]") != -1:
+                continue
+            await client.get_channel(chat_log_channel).send(line)
+        previous_chat_log_count = count
 
 @tasks.loop(seconds=300)
 async def send_ccc_prompt():
