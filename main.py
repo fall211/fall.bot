@@ -444,19 +444,18 @@ async def send_chat_log():
 
     if count > previous_chat_log_count:
         text = ""
-        with open(path, "rb") as f:
+        with open(path, "r", errors="ignore") as f:
             # fix the encoding
-            text = f.decode("utf-8", errors="ignore")
-        f.close()
 
-        lines = text.readlines()
-        for i in range(count - previous_chat_log_count):
-            line = lines[-(count - previous_chat_log_count - i)]
-            line = line[12:]
-            if line.find("[Discord]") != -1:
-                continue
-            await client.get_channel(chat_log_channel).send(line)
-        previous_chat_log_count = count
+            lines = f.readlines()
+            for i in range(count - previous_chat_log_count):
+                line = lines[-(count - previous_chat_log_count - i)]
+                line = line[12:]
+                if line.find("[Discord]") != -1:
+                    continue
+                await client.get_channel(chat_log_channel).send(line)
+            previous_chat_log_count = count
+        f.close()
 
 @tasks.loop(seconds=300)
 async def send_ccc_prompt():
