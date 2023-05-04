@@ -323,17 +323,17 @@ async def toggle_ccc_task(interaction: discord.Interaction):
 
         if send_ccc_prompt.is_running():
             send_ccc_prompt.stop()
-            await interaction.response.send_message("Shenanigans stopped.")
+            await interaction.response.send_message("[Shenanigans] stopped.")
             return
 
         await interaction.response.send_message("Server is not running.", ephemeral=True)
     elif not send_ccc_prompt.is_running():
         send_ccc_prompt.start()
-        await interaction.response.send_message(f"Shenanigans started. Current target is {target}.")
+        await interaction.response.send_message(f"[Shenanigans] started. Current target is {target}.")
         await client.get_channel(interaction.channel_id).send("Use /change_target to change the target.")
     else:
         send_ccc_prompt.stop()
-        await interaction.response.send_message("Shenanigans stopped.")
+        await interaction.response.send_message("[Shenanigans] stopped.")
 
 @tree.command(
     name="change_target",
@@ -342,7 +342,7 @@ async def toggle_ccc_task(interaction: discord.Interaction):
 async def change_target_parameter(interaction: discord.Interaction, player: str):
     global target
     target = player
-    await interaction.response.send_message(f"Shenanigans now targeting {target}")
+    await interaction.response.send_message(f"[Shenanigans] now targeting {target}")
 
 
 @tree.command(
@@ -477,7 +477,7 @@ async def on_guild_join(guild):
 @client.event
 async def on_message(message):
     if message.author == client.user:
-        if message.content.find("Shenanigans") == -1:
+        if message.content.find("[Shenanigans]") == -1:
             return
     
     if message.channel.id == chat_log_channel:
