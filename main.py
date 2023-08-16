@@ -39,7 +39,7 @@ is_server_running = False
 
 
 #! Change these before deployment.
-current_key = key_tBot
+current_key = key_fallBot
 
 current_id = server_id if current_key == key_fallBot else test_id
 chat_log_channel = 1087449487376666624 if current_key == key_fallBot else 1042213192383877263
