@@ -39,8 +39,8 @@ echo "first_folder: $first_folder"
 # Check if the required directories exist
 if [ ! -d "~/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "~/fall.bot/temp/$first_folder/Caves/save" ]; then
     echo "cluster.zip is not valid"
-    rm -rf ~/fall.bot/temp
-    rm cluster.zip
+    # rm -rf ~/fall.bot/temp
+    # rm cluster.zip
     exit 1
 fi
 
