@@ -375,7 +375,7 @@ def get_cluster_names():
 
     names = os.listdir(path)
     names2 = os.listdir(path2)
-    return "Main: " + names + "Beta: " + names2
+    return "Main: " + str(names) + "Beta: " + str(names2)
 
 
 #***************** Tasks *****************
