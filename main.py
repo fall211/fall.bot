@@ -276,8 +276,8 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
     process = subprocess.Popen([make_new_world_path, cluster_name, branch, type])
     process.wait()
 
+    await message.delete()
     await interaction.followup.send(f"Created a new world with name {cluster_name}", ephemeral=True)
-    message.delete()
 
 
 
