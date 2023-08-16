@@ -30,25 +30,25 @@ if [ ! -f cluster.zip ]; then
 fi
 
 # Unzip cluster.zip to a temp folder
-unzip -o -q cluster.zip -d ~/fall.bot/temp
+unzip -o -q cluster.zip -d /home/steam/fall.bot/temp
 
 # Get the name of the first folder inside the temp directory, ignoring __MACOSX
-first_folder=$(ls -1 ~/fall.bot/temp | grep -v "__MACOSX" | head -n 1)
+first_folder=$(ls -1 /home/steam/fall.bot/temp | grep -v "__MACOSX" | head -n 1)
 echo "first_folder: $first_folder"
 
 # Check if the required directories exist
-# if [ ! -d "~/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "~/fall.bot/temp/$first_folder/Caves/save" ]; then
+# if [ ! -d "/home/steam/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "/home/steam/fall.bot/temp/$first_folder/Caves/save" ]; then
 #     echo "cluster.zip is not valid"
-#     # rm -rf ~/fall.bot/temp
+#     # rm -rf /home/steam/fall.bot/temp
 #     # rm cluster.zip
 #     exit 1
 # fi
 
-if [ ! -d "~/fall.bot/temp/$first_folder/Master/save" ]; then
+if [ ! -d "/home/steam/fall.bot/temp/$first_folder/Master/save" ]; then
     echo "cant find master save"
 fi
 
-if [ ! -d "~/fall.bot/temp/$first_folder/Caves/save" ]; then
+if [ ! -d "/home/steam/fall.bot/temp/$first_folder/Caves/save" ]; then
     echo "cant find caves save"
     exit 1
 fi
@@ -57,9 +57,9 @@ fi
 
 
 # check if cluster name already exists
-if [ -d "~/.klei/DoNotStarveTogether/$CLUSTER_NAME" ] || [ -d "~/.klei/DoNotStarveTogetherBetaBranch/$CLUSTER_NAME" ]; then
+if [ -d "/home/steam/.klei/DoNotStarveTogether/$CLUSTER_NAME" ] || [ -d "/home/steam/.klei/DoNotStarveTogetherBetaBranch/$CLUSTER_NAME" ]; then
     echo "cluster name already exists"
-    rm -rf ~/fall.bot/temp
+    rm -rf /home/steam/fall.bot/temp
     # rm cluster.zip
     exit 1
 fi
@@ -67,7 +67,7 @@ fi
 # check if branch is valid
 if [ $BRANCH != "main" ] && [ $BRANCH != "beta" ]; then
     echo "branch is not valid, enter main/beta"
-    rm -rf ~/fall.bot/temp
+    rm -rf /home/steam/fall.bot/temp
     # rm cluster.zip
     exit 1
 fi
@@ -75,13 +75,13 @@ fi
 # check if type is valid
 if [ $TYPE != "main" ] && [ $TYPE != "relaxed" ]; then
     echo "type is not valid, enter main/relaxed"
-    rm -rf ~/fall.bot/temp
+    rm -rf /home/steam/fall.bot/temp
     # rm cluster.zip
     exit 1
 fi
 
 # make new folder from Template cluster in the desired branch
-PATH = "~/.klei/"
+PATH = "/home/steam/.klei/"
 if [ $BRANCH == "main" ]; then
     PATH += "DoNotStarveTogether/"
 else
@@ -100,6 +100,6 @@ else
 fi
 
 # delete temp folder and cluster.zip
-rm -rf ~/fall.bot/temp
+rm -rf /home/steam/fall.bot/temp
 # rm cluster.zip
 exit 0
