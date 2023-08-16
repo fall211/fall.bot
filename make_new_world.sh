@@ -29,16 +29,18 @@ if [ ! -f cluster.zip ]; then
     exit 1
 fi
 
-# check if cluster.zip is valid, unzipped folder should include a ./Master/save and ./Caves/save folders
-# unzip cluster.zip to a temp folder
+# Unzip cluster.zip to a temp folder
 unzip -q cluster.zip -d ~/fall.bot/temp
-# check if ./Master/save and ./Caves/save folders exist
-if [ ! -d ~/fall.bot/temp/Master/save ] || [ ! -d ~/fall.bot/temp/Caves/save ]; then
+# Get the name of the first folder inside the temp directory
+first_folder=$(ls -1 ~/fall.bot/temp | head -n 1)
+# Check if the required directories exist
+if [ ! -d "~/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "~/fall.bot/temp/$first_folder/Caves/save" ]; then
     echo "cluster.zip is not valid"
-    # rm -rf temp
-    # rm cluster.zip
+    rm -rf ~/fall.bot/temp
+    rm cluster.zip
     exit 1
 fi
+
 
 # check if cluster name already exists
 if [ -d ~/.klei/DoNotStarveTogether/$CLUSTER_NAME ] || [ -d ~/.klei/DoNotStarveTogetherBetaBranch/$CLUSTER_NAME]; then
