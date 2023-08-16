@@ -99,6 +99,7 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
+        print(interaction.user + " started the server.")
         global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([start_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server startup initated...", ephemeral=True)
@@ -130,6 +131,7 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
+        print(interaction.user + " stopped the server.")
         process = subprocess.Popen([stop_server_path])
         msg = await interaction.followup.send("Server shutdown initiated...", ephemeral=True)
         process.wait()
@@ -152,6 +154,7 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
+        print(interaction.user + " restarted the server.")
         global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
@@ -187,6 +190,7 @@ tree = app_commands.CommandTree(client)
     description="Opens the server control panel.", 
     guild=discord.Object(id=current_id),)
 async def panel(interaction: discord.Interaction):
+    print(interaction.user + " opened the panel.")
     await interaction.response.send_message(view=PanelMenu())
 
 @tree.command(
@@ -194,6 +198,7 @@ async def panel(interaction: discord.Interaction):
     description="Gets info about the virtual machine.",
     guild=discord.Object(id=current_id),)
 async def get_ubuntu_info(interaction: discord.Interaction):
+    print(interaction.user + " requested vm info.")
     ip, uptime, cpu, ram, disk = get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
@@ -202,6 +207,7 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     description="Gets the names of all the clusters.",
     guild=discord.Object(id=current_id),)
 async def get_cluster_names(interaction: discord.Interaction):
+    print(interaction.user + " requested cluster names.")
     names = fs.get_cluster_names()
     await interaction.response.send_message(f"Current available clusters: {names}", ephemeral=True)
 
@@ -216,6 +222,7 @@ async def change_branch(interaction: discord.Interaction, branch: str):
     :param branch: main/beta
     """
 
+    print(interaction.user + " changed the branch to " + branch)
     global is_beta_server
     
     if branch == "beta":
@@ -234,6 +241,7 @@ async def change_branch(interaction: discord.Interaction, branch: str):
     guild=discord.Object(id=current_id),)
 async def change_cluster(interaction: discord.Interaction, cluster: str):
     
+    print(interaction.user + " changed the cluster to " + cluster)
     global cluster_name
     cluster_name = cluster
     await interaction.response.send_message(f"Bot now accessing {cluster}.", ephemeral=True)
@@ -251,6 +259,7 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
     :param type: main/relaxed
     """
     await interaction.response.defer(ephemeral=True)
+    print(interaction.user + " created a new world with name " + cluster_name + " on branch " + branch + " with type " + type + " on date: " + time.asctime())
 
     if branch != "main" and branch != "beta":
         await interaction.response.send_message("ERROR: Invalid branch.", ephemeral=True)
