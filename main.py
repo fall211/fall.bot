@@ -3,6 +3,7 @@ import subprocess
 import time
 import requests
 from random import sample
+import os
 
 import discord
 from discord import app_commands
@@ -17,6 +18,7 @@ import forum_scraper as fs
 start_server_path = "/home/steam/start_server.sh"
 stop_server_path = "/home/steam/stop_server.sh"
 restart_server_path = "/home/steam/restart_server.sh"
+make_new_world_path = "/home/steam/fall.bot/make_new_world.sh"
 
 
 
@@ -25,7 +27,7 @@ restart_server_path = "/home/steam/restart_server.sh"
 allowed_servers = [server_id, test_id]
 bot_channel_ids = allowed_servers
 test_channels = [test_channel]
-is_beta_server = True
+is_beta_server = False
 cluster_name = "Roots"
 game_version = 500000
 beta_game_version = 500000
@@ -33,15 +35,7 @@ beta_game_version = 500000
 previous_chat_log_count = 0
 is_server_running = False
 
-target = "NanaCreative"
-ccc_commands = {
-    "Increase Player Size": f"f_increaseScale(\'{target}\')",
-    "Reset Player Size": f"f_resetScale(\'{target}\')",
-    "Spawn a Random Mob": f"f_spawnRandomMob(\'{target}\')",
-    "Randomize Health": f"f_randomizeHealth(\'{target}\')",
-    "Randomize Hunger": f"f_randomizeHunger(\'{target}\')",
-    "Randomize Sanity": f"f_randomizeSanity(\'{target}\')",
-}
+
 
 
 #! Change these before deployment.
@@ -181,36 +175,6 @@ class PanelMenu(discord.ui.View):
         else:
             await interaction.followup.send("No updates available.", ephemeral=True)
 
-class CCCMenu(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=15)
-
-        sampled_commands = sample(list(ccc_commands), 3)
-
-        for command in sampled_commands:
-            button = discord.ui.Button(label=f"{command}", style=discord.ButtonStyle.grey, custom_id=f"{command}")
-            button.callback = lambda _, btn = button: self.on_button_click(_, btn)
-            self.add_item(button)
-        
-    async def on_button_click(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        ccc = button.custom_id
-
-        ccc_commands = {
-            "Increase Player Size": f"f_increaseScale(\'{target}\')",
-            "Reset Player Size": f"f_resetScale(\'{target}\')",
-            "Spawn a Random Mob": f"f_spawnRandomMob(\'{target}\')",
-            "Randomize Health": f"f_randomizeHealth(\'{target}\')",
-            "Randomize Hunger": f"f_randomizeHunger(\'{target}\')",
-            "Randomize Sanity": f"f_randomizeSanity(\'{target}\')",
-        }
-        
-        command = ccc_commands[ccc]
-        print(f"Running command: {command}")
-        screen_cmd = f'screen -S s -X stuff "{command}^M"'
-        subprocess.run(screen_cmd, shell=True)  # runs the command in the screen session
-
-        self.stop()
         
 
 #***************** Main *****************
@@ -237,127 +201,84 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     name="change_branch",
     description="Changes the branch of the server.",
     guild=discord.Object(id=current_id),)
-async def change_branch(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+async def change_branch(interaction: discord.Interaction, branch: str):
+    """
+    Changes the server branch.
+    :param branch: main/beta
+    """
 
-    global is_beta_server, is_server_running
-    if is_server_running:
-        await interaction.followup.send("Server must be offline to change branch.", ephemeral=True)
-        return
+    global is_beta_server
     
-    await interaction.followup.send(f"Current branch is {'beta' if is_beta_server else 'live'}\nAre you sure you want to change the branch? (y/n)", ephemeral=True)
-    
-    def check(m):
-        return m.author == interaction.user and m.channel == interaction.channel
-    
-    try:
-        msg = await client.wait_for('message', check=check, timeout=15.0)
-    except asyncio.TimeoutError:
-        await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
+    if branch == "beta":
+        is_beta_server = True
+    elif branch == "main":
+        is_beta_server = False
+    else:
+        await interaction.response.send_message("ERROR: Invalid branch.", ephemeral=True)
         return
-    if msg.content.lower() == "n":
-        await interaction.followup.send("Branch change cancelled.", ephemeral=True)
-        await msg.delete()
-        return
-    await msg.delete()
-    is_beta_server = not is_beta_server
-    await interaction.followup.send(f"Server branch changed to {'beta' if is_beta_server else 'live'}", ephemeral=True)
+    await interaction.response.send_message(f"Server branch changed to {'beta' if is_beta_server else 'main'}", ephemeral=True)
 
-    game_name = "Beta Don't Starve Together" if is_beta_server else "Don't Starve Together"
-    await client.change_presence(activity=discord.Game(name=f"{game_name}"))
 
 @tree.command(
     name="change_cluster",
     description="Changes the cluster name.",
     guild=discord.Object(id=current_id),)
-async def change_cluster(interaction: discord.Interaction):
+async def change_cluster(interaction: discord.Interaction, cluster: str):
     
-    global cluster_name, is_server_running
-    if is_server_running:
-        await interaction.response.send_message("Server must be offline to change cluster.", ephemeral=True)
-        return
+    global cluster_name
     
     await interaction.response.defer(ephemeral=True)
-    await interaction.followup.send(f"Currently accessing cluster: {cluster_name}\nWhat is the name of the cluster you want to access? (case sensitive).\n\"cancel\" to cancel.", ephemeral=True)
 
-    def check(m):
-        return m.author == interaction.user and m.channel == interaction.channel
-    
-    try:
-        msg = await client.wait_for('message', check=check, timeout=15.0)
-    except asyncio.TimeoutError:
-        await interaction.followup.send('Timed out waiting for a response.', ephemeral=True)
+    cluster_name = cluster
+    await interaction.response.send_message(f"Bot now accessing {cluster}.", ephemeral=True)
+    return
+
+@tree.command(
+    name="new_world",
+    description="Creates a new world. Requires a zip of the server files.",
+    guild=discord.Object(id=current_id),)
+async def new_world(interaction: discord.Interaction, cluster_name: str, branch: str, type: str):
+    """
+    creates a new world.
+    :param cluster_name: the name of the cluster to create a new world for
+    :param branch: main/beta
+    :param type: main/relaxed
+    """
+    await interaction.response.defer(ephemeral=True)
+
+    if branch != "main" and branch != "beta":
+        await interaction.response.send_message("ERROR: Invalid branch.", ephemeral=True)
+        return
+    if type != "main" and type != "relaxed":
+        await interaction.response.send_message("ERROR: Invalid type.", ephemeral=True)
+        return
+
+    # check if the cluster name already exists
+    if branch == "main":
+        path = f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}"
     else:
-        if msg.content.lower() == "cancel":
-            await interaction.followup.send("Cluster change cancelled.", ephemeral=True)
-            await msg.delete()
-            return
-        cluster_name = msg.content
-        await interaction.followup.send(f"Bot now accessing cluster {cluster_name}", ephemeral=True)
-        await msg.delete()
+        path = f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}"
+    if os.path.exists(path):
+        await interaction.response.send_message("ERROR: Cluster with the given name already exists.", ephemeral=True)
         return
 
-@tree.command(
-    name="ccc",
-    description="opens the CCC discord-sided menu",
-    guild=discord.Object(id=current_id),)
-async def ccc(interaction: discord.Interaction):
-    global is_server_running, target
-    if not is_server_running:
-        await interaction.response.send_message("Server is not running.", ephemeral=True)
-        return
-    view = CCCMenu()
-    message = await interaction.channel.send(f"Quick! Pick a consequence for {target}!", view=view)
-    await view.wait()
-    await message.delete()
+    await interaction.followup.send("Please send a zip with the save files.", ephemeral=True)
+    # wait for the zip file
+    def check(message):
+        return message.author == interaction.user and message.attachments != []
+    message = await client.wait_for("message", check=check)
+    # download the zip file
+    url = message.attachments[0].url
+    r = requests.get(url, allow_redirects=True)
+    open('cluster.zip', 'wb').write(r.content)
 
+    # run the bash script
+    process = subprocess.Popen([make_new_world_path, cluster_name, branch, type])
+    process.wait()
 
-@tree.command(
-    name="toggle_shenanigans",
-    description="Starts/stops shenanigans.",
-    guild=discord.Object(id=current_id),)
-async def toggle_ccc_task(interaction: discord.Interaction):
+    await interaction.followup.send(f"Created a new world with name {cluster_name}", ephemeral=True)
+    message.delete()
 
-    global is_server_running, target
-    if not is_server_running:
-
-        if send_ccc_prompt.is_running():
-            send_ccc_prompt.stop()
-            await interaction.response.send_message("[Shenanigans] stopped.")
-            return
-
-        await interaction.response.send_message("Server is not running.", ephemeral=True)
-    elif not send_ccc_prompt.is_running():
-        send_ccc_prompt.start()
-        await interaction.response.send_message(f"[Shenanigans] started. Current target is {target}.")
-        await client.get_channel(interaction.channel_id).send("Use /change_target to change the target.")
-    else:
-        send_ccc_prompt.stop()
-        await interaction.response.send_message("[Shenanigans] stopped.")
-
-@tree.command(
-    name="change_target",
-    description="Changes the target of shenanigans.",
-    guild=discord.Object(id=current_id),)
-async def change_target_parameter(interaction: discord.Interaction, player: str):
-    global target
-    target = player
-    await interaction.response.send_message(f"[Shenanigans] now targeting {target}")
-
-
-@tree.command(
-    name="list_players",
-    description="Lists all players on the server.",
-    guild=discord.Object(id=current_id),)
-async def list_players(interaction: discord.Interaction):
-    global is_server_running
-    if not is_server_running:
-        await interaction.response.send_message("Server is not running.", ephemeral=True)
-        return
-    await interaction.response.send_message("Getting player list...", ephemeral=True)
-    command = "f_announcePlayers()"
-    screen_cmd = f'screen -S s -X stuff "{command}^M"'
-    subprocess.run(screen_cmd, shell=True)  # runs the command in the screen session
 
 
 #***************** General Use Functions *****************
@@ -457,16 +378,7 @@ async def send_chat_log():
             previous_chat_log_count = count
         f.close()
 
-@tasks.loop(seconds=300)
-async def send_ccc_prompt():
-    if not is_server_running:
-        send_ccc_prompt.stop()
-        return
-    
-    view = CCCMenu()
-    message = await client.get_channel(chat_log_channel).send(f"Quick! Pick a consequence for {target}!", view=view)
-    await view.wait()
-    await message.delete()
+
 
 #********** Events **********
 @client.event
@@ -477,19 +389,14 @@ async def on_guild_join(guild):
 @client.event
 async def on_message(message):
     if message.author == client.user:
-        if message.content.find("[Shenanigans]") == -1:
-            return
+        return
     
     if message.channel.id == chat_log_channel:
 
         if not is_server_running:
             return
         
-        full_message_to_announce = ""
-        if message.author == client.user:
-            full_message_to_announce = f"[Discord] {message.content}"
-        else:
-            full_message_to_announce = f"[Discord] {message.author}: {message.content}"
+        full_message_to_announce = f"[Discord] {message.author}: {message.content}"
 
         screen_cmd = f'screen -S s -X stuff "TheNet:SystemMessage(\'{full_message_to_announce}\')^M"'
         subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
