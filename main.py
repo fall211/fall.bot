@@ -11,6 +11,7 @@ from discord.ext import commands, tasks
 
 from key import key_fallBot, key_tBot, server_id, test_id, test_channel
 import forum_scraper as fs
+import helper_functions as hf
 
 
 #********** File Paths **********
@@ -75,7 +76,7 @@ class MyClient(discord.Client):
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
 
             global previous_chat_log_count, cluster_name, is_server_running
-            previous_chat_log_count = get_log_file_length(cluster_name, is_beta_server)
+            previous_chat_log_count = hf.get_log_file_length(cluster_name, is_beta_server)
 
             send_chat_log.start()
             is_server_running = True
@@ -174,18 +175,19 @@ class PanelMenu(discord.ui.View):
         
         await interaction.response.defer(ephemeral=True, thinking=True)
         print(str(interaction.user) + " checked for updates.")
-        if check_for_updates():
+        global is_beta_server, game_version, beta_game_version
+        if hf.check_for_updates(is_beta_server, game_version, beta_game_version):
             await interaction.followup.send("There are updates available!", ephemeral=True)
         else:
             await interaction.followup.send("No updates available.", ephemeral=True)
 
         
 
-#***************** Main *****************
+#********** Main #**********
 client = MyClient()
 tree = app_commands.CommandTree(client)
 
-#***************** Slash Commands *****************
+#********** Slash Commands #**********
 @tree.command(
     name="panel", 
     description="Opens the server control panel.", 
@@ -200,7 +202,7 @@ async def panel(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def get_ubuntu_info(interaction: discord.Interaction):
     print(str(interaction.user) + " requested vm info.")
-    ip, uptime, cpu, ram, disk = get_vm_info()
+    ip, uptime, cpu, ram, disk = hf.get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
 @tree.command(
@@ -209,7 +211,7 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def get_cluster_names(interaction: discord.Interaction):
     print(str(interaction.user) + " requested cluster names.")
-    names = get_cluster_names()
+    names = hf.get_clusters()
     await interaction.response.send_message(f"{names}", ephemeral=True)
 
 
@@ -222,17 +224,12 @@ async def change_branch(interaction: discord.Interaction, branch: str):
     Changes the server branch.
     :param branch: main/beta
     """
-
+    branch = branch.lower()
     print(str(interaction.user) + " changed the branch to " + branch)
-    global is_beta_server
     
-    if branch == "beta":
-        is_beta_server = True
-    elif branch == "main":
-        is_beta_server = False
-    else:
-        await interaction.response.send_message("ERROR: Invalid branch.", ephemeral=True)
-        return
+    global is_beta_server
+    is_beta_server = True if branch == "beta" else False
+
     await interaction.response.send_message(f"Server branch changed to {'beta' if is_beta_server else 'main'}", ephemeral=True)
 
 
@@ -241,43 +238,45 @@ async def change_branch(interaction: discord.Interaction, branch: str):
     description="Changes the cluster name.",
     guild=discord.Object(id=current_id),)
 async def change_cluster(interaction: discord.Interaction, cluster: str):
+    """
+    Changes the cluster.
+    :param cluster: cluster name, get list with /get_cluster_names
+    """
     print(str(interaction.user) + " changed the cluster to " + cluster)
     global cluster_name
     cluster_name = cluster
-    await interaction.response.send_message(f"Bot now accessing {cluster}.", ephemeral=True)
+    await interaction.response.send_message(f"Changed cluster to {cluster}.", ephemeral=True)
 
 
 @tree.command(
     name="new_world",
     description="Creates a new world. Requires a zip of the server files.",
     guild=discord.Object(id=current_id),)
-async def new_world(interaction: discord.Interaction, cluster_name: str, branch: str, type: str):
+async def new_world(interaction: discord.Interaction, cluster_name: str, branch: str, difficulty: str):
     """
     creates a new world.
-    :param cluster_name: the name of the cluster to create a new world for
-    :param branch: main/beta
-    :param type: main/relaxed
+    :param cluster_name: entering an existing cluster name will not overwrite it
+    :param branch: enter only main/beta
+    :param difficulty: enter only main/relaxed
     """
     await interaction.response.defer(ephemeral=True)
-    print(str(interaction.user) + " attempted to create a new world with name " + cluster_name)
+    branch = branch.lower(); difficulty = difficulty.lower()
+    print(str(interaction.user) + " attempted to create a new world with name " + cluster_name + " on branch " + branch + " with difficulty " + difficulty)
 
     if branch != "main" and branch != "beta":
         await interaction.response.send_message("ERROR: Invalid branch.", ephemeral=True)
         return
-    if type != "main" and type != "relaxed":
-        await interaction.response.send_message("ERROR: Invalid type.", ephemeral=True)
+    if difficulty != "main" and difficulty != "relaxed":
+        await interaction.response.send_message("ERROR: Invalid difficulty.", ephemeral=True)
         return
 
     # check if the cluster name already exists
-    if branch == "main":
-        path = f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}"
-    else:
-        path = f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}"
+    path = f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}" if branch == "main" else f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}"
     if os.path.exists(path):
         await interaction.response.send_message("ERROR: Cluster with the given name already exists.", ephemeral=True)
         return
 
-    await interaction.followup.send("Please send a zip with the save files.", ephemeral=True)
+    await interaction.followup.send("Please send a zip file with save files for the world.", ephemeral=True)
     # wait for the zip file
     def check(message):
         return message.author == interaction.user and message.attachments != []
@@ -288,7 +287,7 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
     open('cluster.zip', 'wb').write(r.content)
 
     # run the bash script
-    process = subprocess.Popen([make_new_world_path, cluster_name, branch, type])
+    process = subprocess.Popen([make_new_world_path, cluster_name, branch, difficulty])
     process.wait()
 
     await message.delete()
@@ -296,94 +295,13 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
 
 
 
-#***************** General Use Functions *****************
-def get_chat_log_path(cluster_name, beta=False):
-    if beta:
-        return f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}/Master/server_chat_log.txt"
-    else:
-        return f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}/Master/server_chat_log.txt"
-    
-def get_server_log_path(cluster_name, beta=False):
-    if beta:
-        return f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}/Master/server_log.txt"
-    else:
-        return f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}/Master/server_log.txt"
 
-#get key information about the vm
-#NOTE: This is built around an ubuntu vm so you might have to edit the text processing before deployment
-    #on different machines
-def get_vm_info():
-    #get the server's public IP address
-    ip = requests.get("https://api.ipify.org").text
-    try:
-        #get the server's uptime
-        uptime = subprocess.check_output(["uptime", "-p"]).decode("utf-8").strip()
-        uptime = uptime.removeprefix("up ")
-    except:
-        uptime = "ERROR: Could not get uptime."
-    try:
-        #get the server's CPU usage
-        cpu = subprocess.check_output(["top", "-bn1"]).decode("utf-8").splitlines()[0].strip()
-        cpu = cpu.removeprefix("top - ")
-        cpu = cpu.split(",")[-3].strip()
-        cpu = cpu.removeprefix("load average: ").strip()
-        cpu = round(float(cpu) * 100)
-        cpu = f"{cpu}%"
-    except:
-        cpu = "ERROR: Could not get CPU usage."
-    try:
-        #get the server's RAM usage
-        ram = subprocess.check_output(["free", "-m"]).decode("utf-8").splitlines()[1].strip()
-        ram = ram.removeprefix("Mem:").strip().removeprefix("7946").strip()
-        ram = ram.split(" ")[0]
-        ram = round((float(ram) / 7946) * 100)
-        ram = f"{ram}%"
-    except:
-        ram = "ERROR: Could not get RAM usage."
-    try:
-        #get the server's disk usage
-        disk = subprocess.check_output(["df", "-h"]).decode("utf-8").splitlines()[1].strip()
-        disk = disk.removeprefix("/dev/root").strip().removesuffix("/").strip()
-        percent = disk.split(" ")[-1]
-
-        disk = f"{percent}"
-    except:
-        disk = "ERROR: Could not get disk usage."
-    
-    return ip, uptime, cpu, ram, disk
-
-# check for new updates to dst
-def check_for_updates():
-    fs.update_dict()
-    global is_beta_server, game_version, beta_game_version
-    latest_version = fs.get_latest_update_info_from_dict(is_beta_server)
-    if is_beta_server:
-        return latest_version != beta_game_version
-    else:
-        return latest_version != game_version
-
-def get_log_file_length(cluster_name, is_beta_server):
-    path = get_chat_log_path(cluster_name, is_beta_server)
-    f = open(path, 'rb')
-    len = sum(1 for i in f)
-    f.close()
-    return len
-
-def get_cluster_names():
-    path = "/home/steam/.klei/DoNotStarveTogether/"
-    path2 = "/home/steam/.klei/DoNotStarveTogetherBetaBranch/"
-
-    names = os.listdir(path)
-    names2 = os.listdir(path2)
-    return "Main: " + str(names) + "\nBeta: " + str(names2)
-
-
-#***************** Tasks *****************
+#********** Loops #**********
 @tasks.loop(seconds=5)
 async def send_chat_log():
     global cluster_name, is_beta_server, chat_log_channel, previous_chat_log_count
-    path = get_chat_log_path(cluster_name, is_beta_server)
-    count = get_log_file_length(cluster_name, is_beta_server)
+    path = hf.get_chat_log_path(cluster_name, is_beta_server)
+    count = hf.get_log_file_length(cluster_name, is_beta_server)
 
     if count > previous_chat_log_count:
         text = ""
@@ -399,8 +317,6 @@ async def send_chat_log():
                 await client.get_channel(chat_log_channel).send(line)
             previous_chat_log_count = count
         f.close()
-
-
 
 #********** Events **********
 @client.event
