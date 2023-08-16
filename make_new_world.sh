@@ -31,12 +31,12 @@ fi
 
 # check if cluster.zip is valid, unzipped folder should include a ./Master/save and ./Caves/save folders
 # unzip cluster.zip to a temp folder
-unzip -q ~/fall.bot/cluster.zip -d ~/fall.bot/temp
+unzip -q cluster.zip -d ~/fall.bot/temp
 # check if ./Master/save and ./Caves/save folders exist
 if [ ! -d ~/fall.bot/temp/Master/save ] || [ ! -d ~/fall.bot/temp/Caves/save ]; then
     echo "cluster.zip is not valid"
-    rm -rf temp
-    rm cluster.zip
+    # rm -rf temp
+    # rm cluster.zip
     exit 1
 fi
 
