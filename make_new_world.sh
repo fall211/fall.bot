@@ -81,22 +81,22 @@ if [ $TYPE != "main" ] && [ $TYPE != "relaxed" ]; then
 fi
 
 # make new folder from Template cluster in the desired branch
-PATH= "/home/steam/.klei/"
+DEST_PATH="/home/steam/.klei/"
 if [ $BRANCH == "main" ]; then
-    PATH+= "DoNotStarveTogether/"
+    DEST_PATH+="DoNotStarveTogether/"
 else
-    PATH+= "DoNotStarveTogetherBetaBranch/"
+    DEST_PATH+="DoNotStarveTogetherBetaBranch/"
 fi
 
-cp -r .klei/DoNotStarveTogether/Template $PATH$CLUSTER_NAME
-cp -r temp/$first_folder/Master/save $PATH$CLUSTER_NAME/Master
-cp -r temp/$first_folder/Caves/save $PATH$CLUSTER_NAME/Caves
+cp -r /home/steam/.klei/DoNotStarveTogether/Template $DEST_PATH$CLUSTER_NAME
+cp -r /home/steam/fall.bot/temp/$first_folder/Master/save $DEST_PATH$CLUSTER_NAME/Master
+cp -r /home/steam/fall.bot/temp/$first_folder/Caves/save $DEST_PATH$CLUSTER_NAME/Caves
 
 # rename appropriate leveldataoverride
 if [ $TYPE == "main" ]; then
-    mv $PATH$CLUSTER_NAME/Master/leveldataoverrideMAIN.lua $PATH$CLUSTER_NAME/Master/leveldataoverride.lua
+    mv $DEST_PATH$CLUSTER_NAME/Master/leveldataoverrideMAIN.lua $DEST_PATH$CLUSTER_NAME/Master/leveldataoverride.lua
 else
-    mv $PATH$CLUSTER_NAME/Master/leveldataoverrideNOOBS.lua $PATH$CLUSTER_NAME/Master/leveldataoverride.lua
+    mv $DEST_PATH$CLUSTER_NAME/Master/leveldataoverrideNOOBS.lua $DEST_PATH$CLUSTER_NAME/Master/leveldataoverride.lua
 fi
 
 # delete temp folder and cluster.zip
