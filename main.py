@@ -209,7 +209,7 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def get_cluster_names(interaction: discord.Interaction):
     print(str(interaction.user) + " requested cluster names.")
-    names = fs.get_cluster_names()
+    names = get_cluster_names()
     await interaction.response.send_message(f"Current available clusters: {names}", ephemeral=True)
 
 
