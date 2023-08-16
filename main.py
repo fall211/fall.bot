@@ -198,6 +198,15 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
 @tree.command(
+    name="get_cluster_names",
+    description="Gets the names of all the clusters.",
+    guild=discord.Object(id=current_id),)
+async def get_cluster_names(interaction: discord.Interaction):
+    names = fs.get_cluster_names()
+    await interaction.response.send_message(f"Current available clusters: {names}", ephemeral=True)
+
+
+@tree.command(
     name="change_branch",
     description="Changes the branch of the server.",
     guild=discord.Object(id=current_id),)
@@ -351,6 +360,13 @@ def get_log_file_length(cluster_name, is_beta_server):
     f.close()
     return len
 
+def get_cluster_names():
+    path = "/home/steam/.klei/DoNotStarveTogether/"
+    path2 = "/home/steam/.klei/DoNotStarveTogetherBetaBranch/"
+
+    names = os.listdir(path)
+    names2 = os.listdir(path2)
+    return "Main: " + names + "Beta: " + names2
 
 
 #***************** Tasks *****************
