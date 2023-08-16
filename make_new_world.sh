@@ -44,11 +44,11 @@ echo "first_folder: $first_folder"
 #     exit 1
 # fi
 
-if [ ! -d "~/fall.bot/temp/$first_folder/Master/save"]; then
+if [ ! -d "~/fall.bot/temp/$first_folder/Master/save" ]; then
     echo "cant find master save"
 fi
 
-if [ ! -d "~/fall.bot/temp/$first_folder/Caves/save"]; then
+if [ ! -d "~/fall.bot/temp/$first_folder/Caves/save" ]; then
     echo "cant find caves save"
     exit 1
 fi
@@ -57,10 +57,10 @@ fi
 
 
 # check if cluster name already exists
-if [ -d ~/.klei/DoNotStarveTogether/$CLUSTER_NAME ] || [ -d ~/.klei/DoNotStarveTogetherBetaBranch/$CLUSTER_NAME]; then
+if [ -d "~/.klei/DoNotStarveTogether/$CLUSTER_NAME" ] || [ -d "~/.klei/DoNotStarveTogetherBetaBranch/$CLUSTER_NAME" ]; then
     echo "cluster name already exists"
     rm -rf ~/fall.bot/temp
-    rm cluster.zip
+    # rm cluster.zip
     exit 1
 fi
 
@@ -68,7 +68,7 @@ fi
 if [ $BRANCH != "main" ] && [ $BRANCH != "beta" ]; then
     echo "branch is not valid, enter main/beta"
     rm -rf ~/fall.bot/temp
-    rm cluster.zip
+    # rm cluster.zip
     exit 1
 fi
 
@@ -76,7 +76,7 @@ fi
 if [ $TYPE != "main" ] && [ $TYPE != "relaxed" ]; then
     echo "type is not valid, enter main/relaxed"
     rm -rf ~/fall.bot/temp
-    rm cluster.zip
+    # rm cluster.zip
     exit 1
 fi
 
@@ -101,5 +101,5 @@ fi
 
 # delete temp folder and cluster.zip
 rm -rf ~/fall.bot/temp
-rm cluster.zip
+# rm cluster.zip
 exit 0
