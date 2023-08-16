@@ -99,7 +99,7 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
-        print(interaction.user + " started the server.")
+        # print(interaction.user + " started the server.")
         global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([start_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server startup initated...", ephemeral=True)
@@ -131,7 +131,7 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
-        print(interaction.user + " stopped the server.")
+        # print(interaction.user + " stopped the server.")
         process = subprocess.Popen([stop_server_path])
         msg = await interaction.followup.send("Server shutdown initiated...", ephemeral=True)
         process.wait()
@@ -154,7 +154,6 @@ class PanelMenu(discord.ui.View):
             return await interaction.response.send_message("ERROR: Please do not spam commands.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
-        print(interaction.user + " restarted the server.")
         global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
@@ -241,7 +240,6 @@ async def change_branch(interaction: discord.Interaction, branch: str):
     guild=discord.Object(id=current_id),)
 async def change_cluster(interaction: discord.Interaction, cluster: str):
     
-    print(interaction.user + " changed the cluster to " + cluster)
     global cluster_name
     cluster_name = cluster
     await interaction.response.send_message(f"Bot now accessing {cluster}.", ephemeral=True)
@@ -259,7 +257,6 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
     :param type: main/relaxed
     """
     await interaction.response.defer(ephemeral=True)
-    print(interaction.user + " created a new world with name " + cluster_name + " on branch " + branch + " with type " + type + " on date: " + time.asctime())
 
     if branch != "main" and branch != "beta":
         await interaction.response.send_message("ERROR: Invalid branch.", ephemeral=True)
