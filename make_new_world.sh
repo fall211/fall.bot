@@ -81,11 +81,11 @@ if [ $TYPE != "main" ] && [ $TYPE != "relaxed" ]; then
 fi
 
 # make new folder from Template cluster in the desired branch
-PATH = "/home/steam/.klei/"
+PATH= "/home/steam/.klei/"
 if [ $BRANCH == "main" ]; then
-    PATH += "DoNotStarveTogether/"
+    PATH+= "DoNotStarveTogether/"
 else
-    PATH += "DoNotStarveTogetherBetaBranch/"
+    PATH+= "DoNotStarveTogetherBetaBranch/"
 fi
 
 cp -r .klei/DoNotStarveTogether/Template $PATH$CLUSTER_NAME
