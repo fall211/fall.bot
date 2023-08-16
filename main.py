@@ -226,9 +226,6 @@ async def change_branch(interaction: discord.Interaction, branch: str):
 async def change_cluster(interaction: discord.Interaction, cluster: str):
     
     global cluster_name
-    
-    await interaction.response.defer(ephemeral=True)
-
     cluster_name = cluster
     await interaction.response.send_message(f"Bot now accessing {cluster}.", ephemeral=True)
     return
