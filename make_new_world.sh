@@ -34,33 +34,21 @@ unzip -o -q cluster.zip -d /home/steam/fall.bot/temp
 
 # Get the name of the first folder inside the temp directory, ignoring __MACOSX
 first_folder=$(ls -1 /home/steam/fall.bot/temp | grep -v "__MACOSX" | head -n 1)
-echo "first_folder: $first_folder"
 
-# Check if the required directories exist
-# if [ ! -d "/home/steam/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "/home/steam/fall.bot/temp/$first_folder/Caves/save" ]; then
-#     echo "cluster.zip is not valid"
-#     # rm -rf /home/steam/fall.bot/temp
-#     # rm cluster.zip
-#     exit 1
-# fi
-
-if [ ! -d "/home/steam/fall.bot/temp/$first_folder/Master/save" ]; then
-    echo "cant find master save"
-fi
-
-if [ ! -d "/home/steam/fall.bot/temp/$first_folder/Caves/save" ]; then
-    echo "cant find caves save"
+Check if the required directories exist
+if [ ! -d "/home/steam/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "/home/steam/fall.bot/temp/$first_folder/Caves/save" ]; then
+    echo "cluster.zip is not valid"
+    rm -rf /home/steam/fall.bot/temp
+    rm cluster.zip
     exit 1
 fi
-
-
 
 
 # check if cluster name already exists
 if [ -d "/home/steam/.klei/DoNotStarveTogether/$CLUSTER_NAME" ] || [ -d "/home/steam/.klei/DoNotStarveTogetherBetaBranch/$CLUSTER_NAME" ]; then
     echo "cluster name already exists"
     rm -rf /home/steam/fall.bot/temp
-    # rm cluster.zip
+    rm cluster.zip
     exit 1
 fi
 
@@ -68,7 +56,7 @@ fi
 if [ $BRANCH != "main" ] && [ $BRANCH != "beta" ]; then
     echo "branch is not valid, enter main/beta"
     rm -rf /home/steam/fall.bot/temp
-    # rm cluster.zip
+    rm cluster.zip
     exit 1
 fi
 
@@ -76,7 +64,7 @@ fi
 if [ $TYPE != "main" ] && [ $TYPE != "relaxed" ]; then
     echo "type is not valid, enter main/relaxed"
     rm -rf /home/steam/fall.bot/temp
-    # rm cluster.zip
+    rm cluster.zip
     exit 1
 fi
 
@@ -101,5 +89,5 @@ fi
 
 # delete temp folder and cluster.zip
 rm -rf /home/steam/fall.bot/temp
-# rm cluster.zip
+rm cluster.zip
 exit 0
