@@ -37,12 +37,22 @@ first_folder=$(ls -1 ~/fall.bot/temp | grep -v "__MACOSX" | head -n 1)
 echo "first_folder: $first_folder"
 
 # Check if the required directories exist
-if [ ! -d "~/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "~/fall.bot/temp/$first_folder/Caves/save" ]; then
-    echo "cluster.zip is not valid"
-    # rm -rf ~/fall.bot/temp
-    # rm cluster.zip
+# if [ ! -d "~/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "~/fall.bot/temp/$first_folder/Caves/save" ]; then
+#     echo "cluster.zip is not valid"
+#     # rm -rf ~/fall.bot/temp
+#     # rm cluster.zip
+#     exit 1
+# fi
+
+if [ ! -d "~/fall.bot/temp/$first_folder/Master/save"]; then
+    echo "cant find master save"
+fi
+
+if [ ! -d "~/fall.bot/temp/$first_folder/Caves/save"]; then
+    echo "cant find caves save"
     exit 1
 fi
+
 
 
 
