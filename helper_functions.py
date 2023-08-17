@@ -1,5 +1,6 @@
 import requests
 import subprocess
+import shlex
 
 
 
@@ -85,7 +86,8 @@ def get_clusters():
     return "Main: " + str(names_live) + "\nBeta: " + str(names_beta)
 
 def send_to_screen(screen_session, command):
-    screen_cmd = f'screen -S {screen_session} -X stuff "{command}^M"'
+    shlex_command = shlex.quote(command)
+    screen_cmd = f'screen -S {screen_session} -X stuff "{shlex_command}^M"'
     subprocess.run(screen_cmd, shell=True)  
 
 def dst_announce(message):

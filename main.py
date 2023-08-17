@@ -103,7 +103,6 @@ class PanelMenu(discord.ui.View):
         global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([start_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server startup initated...", ephemeral=True)
-        process.wait()
         if is_beta_server:
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
             await client.change_presence(activity=discord.Game(name="Beta Don't Starve Together"))
@@ -134,7 +133,6 @@ class PanelMenu(discord.ui.View):
         print(str(interaction.user) + " stopped the server.")
         process = subprocess.Popen([stop_server_path])
         msg = await interaction.followup.send("Server shutdown initiated...", ephemeral=True)
-        process.wait()
         await msg.edit(content="Server shutdown completed.")
 
         await client.change_presence(activity=discord.Activity(name="user commands", type=discord.ActivityType.listening))
@@ -158,7 +156,6 @@ class PanelMenu(discord.ui.View):
         global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
-        process.wait()
         if is_beta_server:
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
         else:
@@ -288,7 +285,6 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
 
     # run the bash script
     process = subprocess.Popen([make_new_world_path, cluster_name, branch, difficulty])
-    process.wait()
 
     await message.delete()
     await interaction.followup.send(f"Created a new world with name {cluster_name}", ephemeral=True)
