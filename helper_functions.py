@@ -85,12 +85,12 @@ def get_clusters():
     names_beta = os.listdir(path2)
     return "Main: " + str(names_live) + "\nBeta: " + str(names_beta)
 
-def send_to_screen(screen_session, command):
-    shlex_command = shlex.quote(command)
-    screen_cmd = f'screen -S {screen_session} -X stuff "{shlex_command}^M"'
+def send_to_screen(screen_session: str, command: str):
+    shlex_command = shlex.quote(command + '\r')
+    screen_cmd = f'screen -S {screen_session} -X stuff "{shlex_command}"'
     subprocess.run(screen_cmd, shell=True)  
 
-def dst_announce(message):
+def dst_announce(message: str):
     send_to_screen("s", f"TheNet:SystemMessage(\'{message}\')")
 
 def dst_player_list():
