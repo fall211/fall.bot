@@ -90,8 +90,8 @@ def dst_announce(message):
     subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
 
 def dst_player_list():
-    surface_command = "local players = AllPlayers local announceStr = 'Players: ' for k, v in ipairs(players) do local name = v:GetDisplayName() announceStr = announceStr .. name if k ~= #players then announceStr = announceStr .. ', ' end end if announceStr == 'Players (Surface): ' then announceStr = 'There are no players on the surface.' end TheNet:SystemMessage(announceStr, true)"
-    caves_command = "local players = AllPlayers local announceStr = 'Players: ' for k, v in ipairs(players) do local name = v:GetDisplayName() announceStr = announceStr .. name if k ~= #players then announceStr = announceStr .. ', ' end end if announceStr == 'Players (Caves): ' then announceStr = 'There are no players in the caves.' end TheNet:SystemMessage(announceStr, true)"
+    surface_command = "local players = AllPlayers local announceStr = 'Players (Surface): ' for k, v in ipairs(players) do local name = v:GetDisplayName() announceStr = announceStr .. name if k ~= #players then announceStr = announceStr .. ', ' end end if announceStr == 'Players (Surface): ' then announceStr = 'There are no players on the surface.' end TheNet:SystemMessage(announceStr, true)"
+    caves_command = "local players = AllPlayers local announceStr = 'Players (Caves): ' for k, v in ipairs(players) do local name = v:GetDisplayName() announceStr = announceStr .. name if k ~= #players then announceStr = announceStr .. ', ' end end if announceStr == 'Players (Caves): ' then announceStr = 'There are no players in the caves.' end TheNet:SystemMessage(announceStr, false)"
     screen_cmd = f'screen -S s -p 0 -X stuff "{surface_command}^M"'
     subprocess.run(screen_cmd, shell=True)
     screen_cmd = f'screen -S c -p 0 -X stuff "{caves_command}^M"'
