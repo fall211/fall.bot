@@ -94,7 +94,7 @@ def dst_announce(message: str):
     send_to_screen("s", f"TheNet:SystemMessage(\'{message}\')")
 
 def dst_player_list():
-    surface_command = "local players = AllPlayers local announceStr = \"Players: \" for k, v in ipairs(players) do local name = v:GetDisplayName() announceStr = announceStr .. name if k ~= #players then announceStr = announceStr .. \", \" end end if announceStr == \"Players (Surface): \" then announceStr = \"There are no players on the surface.\" end TheNet:SystemMessage(announceStr, true)"
-    caves_command = "local players = AllPlayers local announceStr = \"Players: \" for k, v in ipairs(players) do local name = v:GetDisplayName() announceStr = announceStr .. name if k ~= #players then announceStr = announceStr .. \", \" end end if announceStr == \"Players (Caves): \" then announceStr = \"There are no players in the caves.\" end TheNet:SystemMessage(announceStr, true)"
+    surface_command = 'local players = AllPlayers local announceStr = "Players: " for k, v in ipairs(players) do local name = v:GetDisplayName() announceStr = announceStr .. name if k ~= #players then announceStr = announceStr .. ", " end end if announceStr == "Players (Surface): " then announceStr = "There are no players on the surface." end TheNet:SystemMessage(announceStr, true)'
+    caves_command = 'local players = AllPlayers local announceStr = "Players: " for k, v in ipairs(players) do local name = v:GetDisplayName() announceStr = announceStr .. name if k ~= #players then announceStr = announceStr .. ", " end end if announceStr == "Players (Caves): " then announceStr = "There are no players in the caves." end TheNet:SystemMessage(announceStr, true)'
     send_to_screen("s", surface_command)
     send_to_screen("c", caves_command)
