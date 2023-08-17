@@ -134,7 +134,7 @@ class PanelMenu(discord.ui.View):
         print(str(interaction.user) + " stopped the server.")
         process = subprocess.Popen([stop_server_path])
         msg = await interaction.followup.send("Server shutdown initiated...", ephemeral=True)
-        await msg.edit(content="Server shutdown.")
+        await msg.edit(content="Server will soon be shutdown.")
 
         await client.change_presence(activity=discord.Activity(name="user commands", type=discord.ActivityType.listening))
 
