@@ -4,6 +4,7 @@ import time
 import requests
 from random import sample
 import os
+from enum import Enum
 
 import discord
 from discord import app_commands
@@ -34,9 +35,16 @@ game_version = 500000
 beta_game_version = 500000
 
 previous_chat_log_count = 0
-is_server_running = False
 
+# server state
+class ServerState(Enum):
+    STARTING = 1
+    RUNNING = 2
+    STOPPING = 3
+    STOPPED = 4
+    RESTARTING = 5
 
+server_state = ServerState.STOPPED
 
 
 #! Change these before deployment.
@@ -74,12 +82,6 @@ class MyClient(discord.Client):
             game_version = fs.get_latest_update_info_from_dict(beta=False)
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
 
-            global previous_chat_log_count, cluster_name, is_server_running
-            previous_chat_log_count = hf.get_log_file_length(cluster_name, is_beta_server)
-
-            send_chat_log.start()
-            is_server_running = True
-
 
 
 class PanelMenu(discord.ui.View):
@@ -112,13 +114,10 @@ class PanelMenu(discord.ui.View):
                 
         await msg.edit(content="Server will soon be online.")
 
-        global previous_chat_log_count, is_server_running
+        global previous_chat_log_count, server_state
         previous_chat_log_count = 0
-        is_server_running = True
-        if send_chat_log.is_running():
-            send_chat_log.restart()
-        else:
-            send_chat_log.start()
+        server_state = ServerState.RUNNING
+        send_chat_log.start()
 
 #* Stop server
     @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
@@ -137,8 +136,8 @@ class PanelMenu(discord.ui.View):
 
         await client.change_presence(activity=discord.Activity(name="user commands", type=discord.ActivityType.listening))
 
-        global is_server_running
-        is_server_running = False
+        global server_state
+        server_state = ServerState.STOPPED
         send_chat_log.stop()
 
 
@@ -335,7 +334,7 @@ async def on_message(message):
     
     if message.channel.id == chat_log_channel:
 
-        if not is_server_running:
+        if server_state == ServerState.STOPPED:
             return
         
         full_message_to_announce = f"[Discord] {message.author}: {message.content}"
