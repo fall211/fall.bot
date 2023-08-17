@@ -54,8 +54,7 @@ class MyClient(discord.Client):
     async def on_ready(self):
         await tree.sync(guild=discord.Object(id=current_id))
         self.synced = True
-        print("Logged in as")
-        print(self.user.name, self.user.id)
+        print("Logged in as: " + self.user.name, self.user.id)
 
         if not self.added:
             self.add_view(PanelMenu())
