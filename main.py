@@ -205,6 +205,7 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     ip, uptime, cpu, ram, disk = hf.get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
 
+
 @tree.command(
     name="get_cluster_names",
     description="Gets the names of all the clusters.",
@@ -294,6 +295,14 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
     await interaction.followup.send(f"Created a new world with name {cluster_name}", ephemeral=True)
 
 
+@tree.command(
+    name="get_player_list",
+    description="Gets the list of players on the server.",
+    guild=discord.Object(id=current_id),)
+async def get_player_list(interaction: discord.Interaction):
+    print(str(interaction.user) + " requested the player list.")
+    hf.dst_player_list()
+    await interaction.response.send_message("Player List sent to the chat log", ephemeral=True)
 
 
 #********** Loops #**********
@@ -336,8 +345,10 @@ async def on_message(message):
         
         full_message_to_announce = f"[Discord] {message.author}: {message.content}"
 
-        screen_cmd = f'screen -S s -X stuff "TheNet:SystemMessage(\'{full_message_to_announce}\')^M"'
-        subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
+        hf.dst_announce(full_message_to_announce)
+
+        # screen_cmd = f'screen -S s -X stuff "TheNet:SystemMessage(\'{full_message_to_announce}\')^M"'
+        # subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
 
 
 
