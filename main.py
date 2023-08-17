@@ -115,8 +115,10 @@ class PanelMenu(discord.ui.View):
         await msg.edit(content="Server will soon be online.")
 
         global previous_chat_log_count, server_state
+        await asyncio.sleep(30)
         previous_chat_log_count = 0
         server_state = ServerState.RUNNING
+        # add delay before starting this to make sure it doesn't start before the server is ready
         send_chat_log.start()
 
 #* Stop server
@@ -162,6 +164,7 @@ class PanelMenu(discord.ui.View):
         await msg.edit(content="Server will soon be online.")
 
         global previous_chat_log_count
+        await asyncio.sleep(30)
         previous_chat_log_count = 0
 
 #* Check for DST updates
@@ -296,7 +299,7 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
 async def get_player_list(interaction: discord.Interaction):
     print(str(interaction.user) + " requested the player list.")
     hf.dst_player_list()
-    await interaction.response.send_message("Player List sent to the chat log", ephemeral=True)
+    await interaction.response.send_message("Getting Player list.", ephemeral=True)
 
 
 #********** Loops #**********
@@ -305,6 +308,7 @@ async def send_chat_log():
     global cluster_name, is_beta_server, chat_log_channel, previous_chat_log_count
     path = hf.get_chat_log_path(cluster_name, is_beta_server)
     count = hf.get_log_file_length(cluster_name, is_beta_server)
+
 
     if count > previous_chat_log_count:
         text = ""
