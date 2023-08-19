@@ -21,6 +21,7 @@ start_server_path = "/home/steam/start_server.sh"
 stop_server_path = "/home/steam/stop_server.sh"
 restart_server_path = "/home/steam/restart_server.sh"
 make_new_world_path = "/home/steam/fall.bot/make_new_world.sh"
+backup_path = "/home/steam/backup.sh"
 
 
 
@@ -310,8 +311,27 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
 async def get_player_list(interaction: discord.Interaction):
     print(str(interaction.user) + " requested the player list.")
     hf.dst_player_list()
-    await interaction.response.send_message("Getting Player list.", ephemeral=True)
+    # await interaction.response.send_message("Getting Player list.", ephemeral=True)
+    await interaction.response.defer(ephemeral=True)
 
+@tree.command(
+    name="backup",
+    description="Backs up the server.",
+    guild=discord.Object(id=current_id),)
+async def backup(interaction: discord.Interaction, cluster: str , branch: str):
+    """
+    Backs up the server.
+    :param cluster: cluster name
+    :param branch: main/beta
+    """
+    branch = branch.lower()
+    if branch.startswith("b"):
+        branch = "beta"
+    else:
+        branch = "main"
+    print(str(interaction.user) + f" backed up {branch}/{cluster}.")
+    process = subprocess.Popen([backup_path, cluster, branch])
+    await interaction.response.send_message("Backing up {branch}/{cluster}.", ephemeral=True)
 
 #********** Loops #**********
 @tasks.loop(seconds=5)
