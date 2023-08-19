@@ -132,13 +132,17 @@ class PanelMenu(discord.ui.View):
 
         await interaction.response.defer(ephemeral=True)
         print(str(interaction.user) + " stopped the server.")
+        global server_state
+        server_state = ServerState.STOPPING
+        hf.dst_announce("[Discord] Server is shutting down in 5 seconds.")
+        await asyncio.sleep(5)
+
         process = subprocess.Popen([stop_server_path])
         msg = await interaction.followup.send("Server shutdown initiated...", ephemeral=True)
         await msg.edit(content="Server will soon be shutdown.")
 
         await client.change_presence(activity=discord.Activity(name="user commands", type=discord.ActivityType.listening))
 
-        global server_state
         server_state = ServerState.STOPPED
         send_chat_log.stop()
 
@@ -154,6 +158,12 @@ class PanelMenu(discord.ui.View):
 
         await interaction.response.defer(ephemeral=True)
         print(str(interaction.user) + " restarted the server.")
+
+        hf.dst_announce("[Discord] Server is restarting in 5 seconds.")
+        await asyncio.sleep(5)
+        global server_state
+        server_state = ServerState.RESTARTING
+
         global is_beta_server, game_version, beta_game_version, cluster_name
         process = subprocess.Popen([restart_server_path, cluster_name, str(is_beta_server)])
         msg = await interaction.followup.send("Server restart initiated...", ephemeral=True)
@@ -166,6 +176,7 @@ class PanelMenu(discord.ui.View):
         global previous_chat_log_count
         await asyncio.sleep(30)
         previous_chat_log_count = 0
+        server_state = ServerState.RUNNING
 
 #* Check for DST updates
     @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, row=2, custom_id="check")
@@ -227,7 +238,7 @@ async def change_branch(interaction: discord.Interaction, branch: str):
     print(str(interaction.user) + " changed the branch to " + branch)
     
     global is_beta_server
-    is_beta_server = True if branch == "beta" else False
+    is_beta_server = True if branch.startswith("beta") else False
 
     await interaction.response.send_message(f"Server branch changed to {'beta' if is_beta_server else 'main'}", ephemeral=True)
 
@@ -345,8 +356,6 @@ async def on_message(message):
 
         hf.dst_announce(full_message_to_announce)
 
-        # screen_cmd = f'screen -S s -X stuff "TheNet:SystemMessage(\'{full_message_to_announce}\')^M"'
-        # subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
 
 
 
