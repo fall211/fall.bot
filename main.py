@@ -243,7 +243,7 @@ async def change_branch(interaction: discord.Interaction, branch: str):
     is_beta_server = True if branch.startswith("beta") else False
 
     await interaction.response.send_message(f"Server branch changed to {'beta' if is_beta_server else 'main'}", ephemeral=True)
-    await asyncio.sleep(1)
+    await asyncio.sleep(5)
     await interaction.delete_original_response()
 
 
@@ -260,7 +260,7 @@ async def change_cluster(interaction: discord.Interaction, cluster: str):
     global cluster_name
     cluster_name = cluster
     await interaction.response.send_message(f"Changed cluster to {cluster}.", ephemeral=True)
-    await asyncio.sleep(1)
+    await asyncio.sleep(5)
     await interaction.delete_original_response()
 
 
@@ -307,7 +307,7 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
 
     await message.delete()
     await interaction.followup.send(f"Created a new world with name {cluster_name}", ephemeral=True)
-    await asyncio.sleep(1)
+    await asyncio.sleep(5)
     await interaction.delete_original_response()
 
 
@@ -318,8 +318,8 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
 async def get_player_list(interaction: discord.Interaction):
     print(str(interaction.user) + " requested the player list.")
     hf.dst_player_list()
-    await interaction.response.send_message("Getting Player list.", ephemeral=True)
-    await asyncio.sleep(1)
+    await interaction.response.send_message("Sent Player list to chat log.", ephemeral=True)
+    await asyncio.sleep(5)
     await interaction.delete_original_response()
 
 @tree.command(
@@ -339,8 +339,8 @@ async def backup(interaction: discord.Interaction, cluster: str , branch: str):
         branch = "main"
     print(str(interaction.user) + f" backed up {branch}/{cluster}.")
     process = subprocess.Popen([backup_path, cluster, branch])
-    await interaction.response.send_message("Backing up {branch}/{cluster}.", ephemeral=True)
-    await asyncio.sleep(1)
+    await interaction.response.send_message("Backed up {branch}/{cluster}.", ephemeral=True)
+    await asyncio.sleep(5)
     await interaction.delete_original_response()
 
 #********** Loops #**********
