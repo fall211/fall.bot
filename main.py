@@ -311,8 +311,9 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
 async def get_player_list(interaction: discord.Interaction):
     print(str(interaction.user) + " requested the player list.")
     hf.dst_player_list()
-    # await interaction.response.send_message("Getting Player list.", ephemeral=True)
-    await interaction.response.defer(ephemeral=True)
+    await interaction.response.send_message("Getting Player list.", ephemeral=True)
+    asyncio.sleep(1)
+    await interaction.delete_original_response()
 
 @tree.command(
     name="backup",
