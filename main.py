@@ -226,6 +226,7 @@ async def get_cluster_names(interaction: discord.Interaction):
     await interaction.response.send_message(f"{names}", ephemeral=True)
 
 
+
 @tree.command(
     name="change_branch",
     description="Changes the branch of the server.",
@@ -242,6 +243,8 @@ async def change_branch(interaction: discord.Interaction, branch: str):
     is_beta_server = True if branch.startswith("beta") else False
 
     await interaction.response.send_message(f"Server branch changed to {'beta' if is_beta_server else 'main'}", ephemeral=True)
+    await asyncio.sleep(1)
+    await interaction.delete_original_response()
 
 
 @tree.command(
@@ -257,6 +260,8 @@ async def change_cluster(interaction: discord.Interaction, cluster: str):
     global cluster_name
     cluster_name = cluster
     await interaction.response.send_message(f"Changed cluster to {cluster}.", ephemeral=True)
+    await asyncio.sleep(1)
+    await interaction.delete_original_response()
 
 
 @tree.command(
@@ -302,6 +307,8 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
 
     await message.delete()
     await interaction.followup.send(f"Created a new world with name {cluster_name}", ephemeral=True)
+    await asyncio.sleep(1)
+    await interaction.delete_original_response()
 
 
 @tree.command(
@@ -312,7 +319,7 @@ async def get_player_list(interaction: discord.Interaction):
     print(str(interaction.user) + " requested the player list.")
     hf.dst_player_list()
     await interaction.response.send_message("Getting Player list.", ephemeral=True)
-    asyncio.sleep(1)
+    await asyncio.sleep(1)
     await interaction.delete_original_response()
 
 @tree.command(
@@ -333,6 +340,8 @@ async def backup(interaction: discord.Interaction, cluster: str , branch: str):
     print(str(interaction.user) + f" backed up {branch}/{cluster}.")
     process = subprocess.Popen([backup_path, cluster, branch])
     await interaction.response.send_message("Backing up {branch}/{cluster}.", ephemeral=True)
+    await asyncio.sleep(1)
+    await interaction.delete_original_response()
 
 #********** Loops #**********
 @tasks.loop(seconds=5)
