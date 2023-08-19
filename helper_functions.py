@@ -82,8 +82,8 @@ def get_clusters():
     path_live = "/home/steam/.klei/DoNotStarveTogether/"
     path_beta = "/home/steam/.klei/DoNotStarveTogetherBetaBranch/"
 
-    names_live = os.listdir(path)
-    names_beta = os.listdir(path2)
+    names_live = os.listdir(path_live)
+    names_beta = os.listdir(path_beta)
     return "Main: " + str(names_live) + "\nBeta: " + str(names_beta)
 
 def dst_announce(message):
