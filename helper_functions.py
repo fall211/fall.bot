@@ -1,7 +1,8 @@
 import requests
 import subprocess
 import shlex
-
+import os
+import forum_scraper as fs
 
 
 
