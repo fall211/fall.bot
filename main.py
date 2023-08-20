@@ -49,7 +49,7 @@ server_state = ServerState.STOPPED
 
 
 #! Change these before deployment.
-current_key = key_tBot
+current_key = key_fallBot
 
 current_id = server_id if current_key == key_fallBot else test_id
 chat_log_channel = 1087449487376666624 if current_key == key_fallBot else 1042213192383877263
@@ -240,6 +240,7 @@ class PanelMenu(discord.ui.View):
 
     @discord.ui.button(label="Change Cluster", style=discord.ButtonStyle.grey, row=2, custom_id="change_branch")
     async def change_branch(self, interaction: discord.Interaction, button: discord.ui.Button):
+        print(str(interaction.user) + " started a branch/cluster change.")
         global is_beta_server, cluster_name
         text = f"Currently accessing {cluster_name} on the {'Beta' if is_beta_server else 'Main'} Branch."
         await interaction.response.send_message(content=text, view=SelectionView(), ephemeral=True)
@@ -266,54 +267,6 @@ async def get_ubuntu_info(interaction: discord.Interaction):
     print(str(interaction.user) + " requested vm info.")
     ip, uptime, cpu, ram, disk = hf.get_vm_info()
     await interaction.response.send_message(f"IP: {ip}\nUptime: {uptime}\nCPU usage: {cpu}\nRAM usage: {ram}\nDisk usage: {disk}", ephemeral=True)
-
-
-@tree.command(
-    name="get_cluster_names",
-    description="Gets the names of all the clusters.",
-    guild=discord.Object(id=current_id),)
-async def get_cluster_names(interaction: discord.Interaction):
-    print(str(interaction.user) + " requested cluster names.")
-    names = hf.get_clusters()
-    await interaction.response.send_message(f"{names}", ephemeral=True)
-
-
-
-@tree.command(
-    name="change_branch",
-    description="Changes the branch of the server.",
-    guild=discord.Object(id=current_id),)
-async def change_branch(interaction: discord.Interaction, branch: str):
-    """
-    Changes the server branch.
-    :param branch: main/beta
-    """
-    branch = branch.lower()
-    print(str(interaction.user) + " changed the branch to " + branch)
-    
-    global is_beta_server
-    is_beta_server = True if branch.startswith("beta") else False
-
-    await interaction.response.send_message(f"Server branch changed to {'beta' if is_beta_server else 'main'}", ephemeral=True)
-    await asyncio.sleep(5)
-    await interaction.delete_original_response()
-
-
-@tree.command(
-    name="change_cluster",
-    description="Changes the cluster name.",
-    guild=discord.Object(id=current_id),)
-async def change_cluster(interaction: discord.Interaction, cluster: str):
-    """
-    Changes the cluster.
-    :param cluster: cluster name, get list with /get_cluster_names
-    """
-    print(str(interaction.user) + " changed the cluster to " + cluster)
-    global cluster_name
-    cluster_name = cluster
-    await interaction.response.send_message(f"Changed cluster to {cluster}.", ephemeral=True)
-    await asyncio.sleep(5)
-    await interaction.delete_original_response()
 
 
 @tree.command(

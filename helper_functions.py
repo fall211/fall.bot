@@ -79,13 +79,6 @@ def get_log_file_length(cluster_name, is_beta_server):
     f.close()
     return len
 
-def get_clusters():
-    path_live = "/home/steam/.klei/DoNotStarveTogether/"
-    path_beta = "/home/steam/.klei/DoNotStarveTogetherBetaBranch/"
-
-    names_live = os.listdir(path_live)
-    names_beta = os.listdir(path_beta)
-    return "Main: " + str(names_live) + "\nBeta: " + str(names_beta)
 
 def get_cluster_options(is_beta_server):
     path_live = "/home/steam/.klei/DoNotStarveTogether/"
