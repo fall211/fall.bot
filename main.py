@@ -49,7 +49,7 @@ server_state = ServerState.STOPPED
 
 
 #! Change these before deployment.
-current_key = key_fallBot
+current_key = key_tBot
 
 current_id = server_id if current_key == key_fallBot else test_id
 chat_log_channel = 1087449487376666624 if current_key == key_fallBot else 1042213192383877263
@@ -83,13 +83,60 @@ class MyClient(discord.Client):
             game_version = fs.get_latest_update_info_from_dict(beta=False)
             beta_game_version = fs.get_latest_update_info_from_dict(beta=True)
 
+class SelectionView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.select_branch = discord.ui.Select(placeholder="Select Branch", options=[
+            discord.SelectOption(label="Main", value="main"),
+            discord.SelectOption(label="Beta", value="beta"),
+            discord.SelectOption(label="Cancel", value="Cancel")], row=0, custom_id="branch")
+        
+        self.select_branch.callback = self.sel_branch
+        self.add_item(self.select_branch)
+
+
+    async def sel_branch(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        if self.select_branch.values[0] == "Cancel":
+            self.remove_item(self.select_branch)
+            self.stop()
+            await interaction.edit_original_response(view=self, content="Cancelled.")
+            await asyncio.sleep(5)
+            await interaction.delete_original_response()
+            return
+        print(str(interaction.user) + " changed the branch to " + self.select_branch.values[0])
+        global is_beta_server
+        is_beta_server = True if self.select_branch.values[0] == "beta" else False
+        self.remove_item(self.select_branch)
+        self.create_cluster_selection(is_beta_server)
+        self.add_item(self.select_cluster)
+        await interaction.edit_original_response(view=self)        
+
+
+    def create_cluster_selection(self, is_beta_server):
+        self.select_cluster = discord.ui.Select(placeholder="Select Cluster", options=
+            hf.get_cluster_options(is_beta_server), row=0, custom_id="cluster")
+
+        self.select_cluster.callback = self.sel_cluster
+
+
+    async def sel_cluster(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        print(str(interaction.user) + " changed the cluster to " + self.select_cluster.values[0])
+        global cluster_name
+        cluster_name = self.select_cluster.values[0]
+        self.remove_item(self.select_cluster)
+        self.stop()
+        branch = "Beta" if is_beta_server else "Main"
+        await interaction.edit_original_response(view=self, content=f"Changed cluster to {cluster_name} on {branch} Branch.")
+
+
 
 
 class PanelMenu(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
         self.cooldown = commands.CooldownMapping.from_cooldown(1,5, commands.BucketType.default)
-
 
 
 #* Start Server
@@ -191,7 +238,12 @@ class PanelMenu(discord.ui.View):
         else:
             await interaction.followup.send("No updates available.", ephemeral=True)
 
-        
+    @discord.ui.button(label="Change Cluster", style=discord.ButtonStyle.grey, row=2, custom_id="change_branch")
+    async def change_branch(self, interaction: discord.Interaction, button: discord.ui.Button):
+        global is_beta_server, cluster_name
+        text = f"Currently accessing {cluster_name} on the {'Beta' if is_beta_server else 'Main'} Branch."
+        await interaction.response.send_message(content=text, view=SelectionView(), ephemeral=True)
+    
 
 #********** Main #**********
 client = MyClient()
@@ -365,6 +417,8 @@ async def send_chat_log():
                 await client.get_channel(chat_log_channel).send(line)
             previous_chat_log_count = count
         f.close()
+
+
 
 #********** Events **********
 @client.event

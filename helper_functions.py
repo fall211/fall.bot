@@ -4,6 +4,7 @@ import shlex
 import os
 import forum_scraper as fs
 
+import discord
 
 
 #***************** General Use Functions *****************
@@ -85,6 +86,24 @@ def get_clusters():
     names_live = os.listdir(path_live)
     names_beta = os.listdir(path_beta)
     return "Main: " + str(names_live) + "\nBeta: " + str(names_beta)
+
+def get_cluster_options(is_beta_server):
+    path_live = "/home/steam/.klei/DoNotStarveTogether/"
+    path_beta = "/home/steam/.klei/DoNotStarveTogetherBetaBranch/"
+
+    path = path_beta if is_beta_server else path_live
+    path = "/Users/tuukkav/Documents/Klei/DoNotStarveTogether/915042413"
+
+    names = os.listdir(path)
+
+    options = []
+    for name in names:
+        if name == "Template":
+            continue
+        selection = discord.SelectOption(label=name, value=name)
+        options.append(selection)
+
+    return options
 
 def dst_announce(message):
     screen_cmd = f'screen -S s -X stuff "TheNet:SystemMessage(\'{message}\')^M"'
