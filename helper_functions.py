@@ -85,7 +85,7 @@ def get_cluster_options(is_beta_server):
     path_beta = "/home/steam/.klei/DoNotStarveTogetherBetaBranch/"
 
     path = path_beta if is_beta_server else path_live
-    path = "/Users/tuukkav/Documents/Klei/DoNotStarveTogether/915042413"
+
 
     names = os.listdir(path)
 
