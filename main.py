@@ -168,6 +168,7 @@ class PanelMenu(discord.ui.View):
         server_state = ServerState.RUNNING
         # add delay before starting this to make sure it doesn't start before the server is ready
         send_chat_log.start()
+        await interaction.delete_original_response()
 
 #* Stop server
     @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
@@ -193,6 +194,8 @@ class PanelMenu(discord.ui.View):
 
         server_state = ServerState.STOPPED
         send_chat_log.stop()
+        await asyncio.sleep(5)
+        await interaction.delete_original_response()
 
 
 #* Restart server
@@ -225,6 +228,7 @@ class PanelMenu(discord.ui.View):
         await asyncio.sleep(30)
         previous_chat_log_count = 0
         server_state = ServerState.RUNNING
+        await interaction.delete_original_response()
 
 #* Check for DST updates
     @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, row=2, custom_id="check")
@@ -344,7 +348,7 @@ async def backup(interaction: discord.Interaction, cluster: str , branch: str):
         branch = "main"
     print(str(interaction.user) + f" backed up {branch}/{cluster}.")
     process = subprocess.Popen([backup_path, cluster, branch])
-    await interaction.response.send_message("Backed up {branch}/{cluster}.", ephemeral=True)
+    await interaction.response.send_message(f"Backed up {branch}/{cluster}.", ephemeral=True)
     await asyncio.sleep(5)
     await interaction.delete_original_response()
 
