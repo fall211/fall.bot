@@ -168,7 +168,7 @@ class PanelMenu(discord.ui.View):
         server_state = ServerState.RUNNING
         # add delay before starting this to make sure it doesn't start before the server is ready
         send_chat_log.start()
-        await interaction.delete_original_response()
+        await msg.delete()
 
 #* Stop server
     @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
@@ -195,7 +195,7 @@ class PanelMenu(discord.ui.View):
         server_state = ServerState.STOPPED
         send_chat_log.stop()
         await asyncio.sleep(5)
-        await interaction.delete_original_response()
+        await msg.delete()
 
 
 #* Restart server
