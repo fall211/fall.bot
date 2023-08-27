@@ -228,7 +228,7 @@ class PanelMenu(discord.ui.View):
         await asyncio.sleep(30)
         previous_chat_log_count = 0
         server_state = ServerState.RUNNING
-        await interaction.delete_original_response()
+        await msg.delete()
 
 #* Check for DST updates
     @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, row=2, custom_id="check")
