@@ -369,6 +369,9 @@ async def relink_chatlog(interaction: discord.Interaction):
     previous_chat_log_count = hf.get_log_file_length(cluster_name, is_beta_server)
     
     send_chat_log.restart()
+    await interaction.response.send_message("Relinked the chat log.", ephemeral=True)
+    await asyncio.sleep(5)
+    await interaction.delete_original_response()
 
 
 #********** Loops #**********
