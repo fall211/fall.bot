@@ -364,10 +364,10 @@ async def send_chat_log():
     path = hf.get_chat_log_path(cluster_name, is_beta_server)
     count = hf.get_log_file_length(cluster_name, is_beta_server)
 
+    global just_started
     if just_started:
         if previous_chat_log_count - count > 25:
             return # still opening the old file
-        global just_started
         just_started = False
 
     if count > previous_chat_log_count:
