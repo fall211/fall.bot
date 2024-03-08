@@ -1,102 +1,102 @@
 {
-    "569068": {
+    "597344": {
+        "beta": true,
+        "release_id": "2166"
+    },
+    "595714": {
         "beta": false,
-        "release_id": "2055"
+        "release_id": "2160"
     },
-    "568393": {
+    "593204": {
         "beta": false,
-        "release_id": "2050"
+        "release_id": "2151"
     },
-    "567871": {
+    "593060": {
         "beta": false,
-        "release_id": "2045"
+        "release_id": "2150"
     },
-    "567776": {
+    "590113": {
         "beta": false,
-        "release_id": "2044"
+        "release_id": "2148"
     },
-    "566991": {
+    "588693": {
         "beta": false,
-        "release_id": "2037"
+        "release_id": "2147"
     },
-    "566103": {
-        "beta": true,
-        "release_id": "2035"
-    },
-    "565757": {
-        "beta": true,
-        "release_id": "2033"
-    },
-    "564742": {
-        "beta": true,
-        "release_id": "2032"
-    },
-    "564148": {
-        "beta": true,
-        "release_id": "2029"
-    },
-    "564067": {
-        "beta": true,
-        "release_id": "2028"
-    },
-    "562556": {
+    "587581": {
         "beta": false,
-        "release_id": "2026"
+        "release_id": "2144"
     },
-    "561979": {
+    "587429": {
         "beta": false,
-        "release_id": "2018"
+        "release_id": "2143"
     },
-    "561632": {
+    "587277": {
         "beta": false,
-        "release_id": "2015"
+        "release_id": "2141"
     },
-    "561466": {
+    "586896": {
         "beta": true,
-        "release_id": "2012"
+        "release_id": "2140"
     },
-    "561166": {
-        "beta": true,
-        "release_id": "2010"
-    },
-    "560308": {
-        "beta": true,
-        "release_id": "2008"
-    },
-    "559557": {
-        "beta": true,
-        "release_id": "2006"
-    },
-    "556225": {
+    "586529": {
         "beta": false,
-        "release_id": "2001"
+        "release_id": "2139"
     },
-    "555166": {
+    "585956": {
+        "beta": true,
+        "release_id": "2138"
+    },
+    "584421": {
+        "beta": true,
+        "release_id": "2137"
+    },
+    "584404": {
+        "beta": true,
+        "release_id": "2136"
+    },
+    "584245": {
+        "beta": true,
+        "release_id": "2135"
+    },
+    "580433": {
         "beta": false,
-        "release_id": "2000"
+        "release_id": "2125"
     },
-    "554561": {
+    "580156": {
         "beta": false,
-        "release_id": "1996"
+        "release_id": "2124"
     },
-    "553879": {
-        "beta": true,
-        "release_id": "1995"
+    "579931": {
+        "beta": false,
+        "release_id": "2122"
     },
-    "553504": {
-        "beta": true,
-        "release_id": "1994"
+    "579589": {
+        "beta": false,
+        "release_id": "2121"
     },
-    "553139": {
-        "beta": true,
-        "release_id": "1993"
+    "579121": {
+        "beta": false,
+        "release_id": "2120"
     },
-    "552394": {
-        "beta": true,
-        "release_id": "1990"
+    "578580": {
+        "beta": false,
+        "release_id": "2117"
     },
-    "552138": {
+    "577874": {
+        "beta": false,
+        "release_id": "2115"
+    },
+    "577578": {
+        "beta": false,
+        "release_id": "2112"
+    },
+    "576966": {
         "beta": true,
-        "release_id": "1989"
+        "release_id": "2109"
+    },
+    "576473": {
+        "beta": true,
+        "release_id": "2106"
     }
 }

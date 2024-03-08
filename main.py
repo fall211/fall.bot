@@ -36,6 +36,7 @@ game_version = 500000
 beta_game_version = 500000
 
 previous_chat_log_count = 0
+just_started = False
 
 # server state
 class ServerState(Enum):
@@ -162,9 +163,11 @@ class PanelMenu(discord.ui.View):
                 
         await msg.edit(content="Server will soon be online.")
 
-        global previous_chat_log_count, server_state
         await asyncio.sleep(30)
+        
+        global previous_chat_log_count, server_state, just_started
         previous_chat_log_count = 0
+        just_started = True
         server_state = ServerState.RUNNING
         # add delay before starting this to make sure it doesn't start before the server is ready
         send_chat_log.start()
@@ -224,9 +227,11 @@ class PanelMenu(discord.ui.View):
             game_version = fs.get_latest_update_info_from_dict(beta=False)
         await msg.edit(content="Server will soon be online.")
 
-        global previous_chat_log_count
         await asyncio.sleep(30)
+        
+        global previous_chat_log_count, just_started
         previous_chat_log_count = 0
+        just_started = True
         server_state = ServerState.RUNNING
         await msg.delete()
 
@@ -359,8 +364,15 @@ async def send_chat_log():
     path = hf.get_chat_log_path(cluster_name, is_beta_server)
     count = hf.get_log_file_length(cluster_name, is_beta_server)
 
+    if just_started:
+        if previous_chat_log_count - count > 25:
+            return # still opening the old file
+        global just_started
+        just_started = False
 
     if count > previous_chat_log_count:
+        if count - previous_chat_log_count > 100:
+            return # too many messages
         text = ""
         with open(path, "r", errors="ignore") as f:
             # fix the encoding
@@ -371,6 +383,11 @@ async def send_chat_log():
                 line = line[12:]
                 if line.find("[Discord]") != -1:
                     continue
+                if line.find("[Whisper]") != -1:
+                    continue
+                if line.startswith("[Say]"):
+                    line = line[20:]
+                
                 await client.get_channel(chat_log_channel).send(line)
             previous_chat_log_count = count
         f.close()
