@@ -5,6 +5,7 @@ import requests
 from random import sample
 import os
 from enum import Enum
+import re
 
 import discord
 from discord import app_commands
@@ -357,6 +358,18 @@ async def backup(interaction: discord.Interaction, cluster: str , branch: str):
     await asyncio.sleep(5)
     await interaction.delete_original_response()
 
+@tree.command(
+    name="relink_chatlog",
+    description="Relinks the chat log.",
+    guild=discord.Object(id=current_id),)
+async def relink_chatlog(interaction: discord.Interaction):
+    global just_started, previous_chat_log_count, cluster_name, is_beta_server
+    just_started = False
+    previous_chat_log_count = hf.get_log_file_length(cluster_name, is_beta_server)
+    
+    send_chat_log.restart()
+
+
 #********** Loops #**********
 @tasks.loop(seconds=5)
 async def send_chat_log():
@@ -381,9 +394,9 @@ async def send_chat_log():
             for i in range(count - previous_chat_log_count):
                 line = lines[-(count - previous_chat_log_count - i)]
                 line = line[12:]
-                if line.find("[Discord]") != -1:
+                if line.startswith("[System Message] @"):
                     continue
-                if line.find("[Whisper]") != -1:
+                if line.startswith("[Whisper]"):
                     continue
                 if line.startswith("[Say]"):
                     line = line[20:]
@@ -409,8 +422,24 @@ async def on_message(message):
 
         if server_state == ServerState.STOPPED:
             return
+            
+        # Convert emojis to text representation
+        emoji_pattern = re.compile("["u"\U0001F600-\U0001F64F"  # emoticons
+                                       u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                                       u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                                       u"\U0001F700-\U0001F77F"  # alchemical symbols
+                                       u"\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
+                                       u"\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+                                       u"\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+                                       u"\U0001FA00-\U0001FA6F"  # Chess Symbols
+                                       u"\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+                                       u"\U00002702-\U000027B0"  # Dingbats
+                                       u"\U000024C2-\U0001F251"  # Enclosed characters
+                                       "]+", flags=re.UNICODE)
         
-        full_message_to_announce = f"[Discord] {message.author}: {message.content}"
+        msg = emoji_pattern.sub(r'', message.content)  # Remove emojis from message
+        
+        full_message_to_announce = f"@{message.author}: {msg}"
 
         hf.dst_announce(full_message_to_announce)
 
