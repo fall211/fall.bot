@@ -98,10 +98,9 @@ def get_cluster_options(is_beta_server):
 
     return options
 
-def dst_announce(message):
+def dst_announce(msg):
     # add \ before ' in the message to prevent errors
-    message = message.replace('"', '\\"')
-    message = message.replace("'", "\\'")
+    message = msg.replace('"', '\\"').replace("'", "\\'")
     screen_cmd = f'screen -S s -X stuff "TheNet:SystemMessage(\'{message}\')^M"'
     subprocess.run(screen_cmd, shell=True)  # send the message to the screen session
 
