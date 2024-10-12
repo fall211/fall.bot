@@ -22,18 +22,20 @@ function check_for_dir()
     fi
 }
 
-# check if screen sessions named "s" and "c" are running, if not, start them
-if ! screen -list | grep -q "s"; then
-    screen -dmS s
-    # change to the bot directory
-    screen -S s -X stuff "cd $HOME/fall.bot^M"
+
+# Check if the "s" screen session is running
+if ! screen -list | grep -q "\.s"; then
+    screen -dmS s  # Start the "s" session in detached mode
+    # Send the command to change to the bot directory in the "s" session
+    screen -S s -X stuff "cd $HOME/fall.bot\n"
     echo "screen session s started"
 fi
 
-if ! screen -list | grep -q "c"; then
-    screen -dmS c
-    # change to the bot directory
-    screen -S c -X stuff "cd $HOME/fall.bot^M"
+# Check if the "c" screen session is running
+if ! screen -list | grep -q "\.c"; then
+    screen -dmS c  # Start the "c" session in detached mode
+    # Send the command to change to the bot directory in the "c" session
+    screen -S c -X stuff "cd $HOME/fall.bot\n"
     echo "screen session c started"
 fi
 
