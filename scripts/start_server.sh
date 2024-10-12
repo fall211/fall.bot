@@ -11,17 +11,17 @@ cd "$HOME/fall.bot/scripts"
 
 if [ $2 = "True" ]
 then
-	command_master+="bash run_custom_server.sh $cluster_name Master True^M"
-	command_caves+="bash run_custom_server.sh $cluster_name Caves True^M"
+	command_master+="bash run_custom_server.sh $cluster_name Master True\n"
+	command_caves+="bash run_custom_server.sh $cluster_name Caves True\n"
 else
-	command_master+="bash run_custom_server.sh $cluster_name Master False^M"
-	command_caves+="bash run_custom_server.sh $cluster_name Caves False^M"
+	command_master+="bash run_custom_server.sh $cluster_name Master False\n"
+	command_caves+="bash run_custom_server.sh $cluster_name Caves False\n"
 fi
 
-screen -S s -p 0 -X stuff "$commmand_master"
+screen -S s -X stuff "$commmand_master"
 echo "starting master shard"
 sleep 10
-screen -S c -p 0 -X stuff "$commmand_caves"
+screen -S c -X stuff "$commmand_caves"
 echo "starting cave shard"
 sleep 10
 echo "both servers started"

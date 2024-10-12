@@ -27,7 +27,7 @@ function check_for_dir()
 if ! screen -list | grep -q "\.s"; then
     screen -dmS s  # Start the "s" session in detached mode
     # Send the command to change to the bot directory in the "s" session
-    screen -S s -X stuff "cd $HOME/fall.bot\n"
+    screen -S s -X stuff "cd $HOME/fall.bot/scripts\n"
     echo "screen session s started"
 fi
 
@@ -35,9 +35,9 @@ fi
 if ! screen -list | grep -q "\.c"; then
     screen -dmS c  # Start the "c" session in detached mode
     # Send the command to change to the bot directory in the "c" session
-    screen -S c -X stuff "cd $HOME/fall.bot\n"
+    screen -S c -X stuff "cd $HOME/fall.bot/scripts\n"
     echo "screen session c started"
 fi
 
-echo "Environment setup complete"
+echo "Environment check/setup complete."
 
