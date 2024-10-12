@@ -37,7 +37,7 @@ allowed_servers = [server_id, test_id]
 bot_channel_ids = allowed_servers
 test_channels = [test_channel]
 is_beta_server = False
-cluster_name = "lakes"
+cluster_name = "Template"
 game_version = 500000
 beta_game_version = 500000
 

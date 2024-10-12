@@ -48,9 +48,9 @@ run_shared+=(-monitor_parent_process $$)
 
 if [ $2 = "Caves"]
 then
-	"${run_shared[@]}" -shard Caves -only_update_server_mods | sed 's/^/Caves:  /'
+	"${run_shared[@]}" -shard Caves | sed 's/^/Caves:  /'
 else
- 	"${run_shared[@]}" -shard Master -only_update_server_mods | sed 's/^/Master: /'
+ 	"${run_shared[@]}" -shard Master | sed 's/^/Master: /'
 fi
 
 	
