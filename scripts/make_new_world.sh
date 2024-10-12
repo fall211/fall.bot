@@ -30,24 +30,24 @@ if [ ! -f cluster.zip ]; then
 fi
 
 # Unzip cluster.zip to a temp folder
-unzip -o -q cluster.zip -d /home/steam/fall.bot/temp
+unzip -o -q cluster.zip -d $HOME/fall.bot/temp
 
 # Get the name of the first folder inside the temp directory, ignoring __MACOSX
-first_folder=$(ls -1 /home/steam/fall.bot/temp | grep -v "__MACOSX" | head -n 1)
+first_folder=$(ls -1 $HOME/fall.bot/temp | grep -v "__MACOSX" | head -n 1)
 
 Check if the required directories exist
-if [ ! -d "/home/steam/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "/home/steam/fall.bot/temp/$first_folder/Caves/save" ]; then
+if [ ! -d "$HOME/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "$HOME/fall.bot/temp/$first_folder/Caves/save" ]; then
     echo "cluster.zip is not valid"
-    rm -rf /home/steam/fall.bot/temp
+    rm -rf $HOME/fall.bot/temp
     rm cluster.zip
     exit 1
 fi
 
 
 # check if cluster name already exists
-if [ -d "/home/steam/.klei/DoNotStarveTogether/$CLUSTER_NAME" ] || [ -d "/home/steam/.klei/DoNotStarveTogetherBetaBranch/$CLUSTER_NAME" ]; then
+if [ -d "$HOME/.klei/DoNotStarveTogether/$CLUSTER_NAME" ] || [ -d "$HOME/.klei/DoNotStarveTogetherBetaBranch/$CLUSTER_NAME" ]; then
     echo "cluster name already exists"
-    rm -rf /home/steam/fall.bot/temp
+    rm -rf $HOME/fall.bot/temp
     rm cluster.zip
     exit 1
 fi
@@ -55,7 +55,7 @@ fi
 # check if branch is valid
 if [ $BRANCH != "main" ] && [ $BRANCH != "beta" ]; then
     echo "branch is not valid, enter main/beta"
-    rm -rf /home/steam/fall.bot/temp
+    rm -rf $HOME/fall.bot/temp
     rm cluster.zip
     exit 1
 fi
@@ -63,22 +63,22 @@ fi
 # check if type is valid
 if [ $TYPE != "main" ] && [ $TYPE != "relaxed" ]; then
     echo "type is not valid, enter main/relaxed"
-    rm -rf /home/steam/fall.bot/temp
+    rm -rf $HOME/fall.bot/temp
     rm cluster.zip
     exit 1
 fi
 
 # make new folder from Template cluster in the desired branch
-DEST_PATH="/home/steam/.klei/"
+DEST_PATH="$HOME/.klei/"
 if [ $BRANCH == "main" ]; then
     DEST_PATH+="DoNotStarveTogether/"
 else
     DEST_PATH+="DoNotStarveTogetherBetaBranch/"
 fi
 
-cp -r /home/steam/.klei/DoNotStarveTogether/Template $DEST_PATH$CLUSTER_NAME
-cp -r /home/steam/fall.bot/temp/$first_folder/Master/save $DEST_PATH$CLUSTER_NAME/Master
-cp -r /home/steam/fall.bot/temp/$first_folder/Caves/save $DEST_PATH$CLUSTER_NAME/Caves
+cp -r $HOME/.klei/DoNotStarveTogether/Template $DEST_PATH$CLUSTER_NAME
+cp -r $HOME/fall.bot/temp/$first_folder/Master/save $DEST_PATH$CLUSTER_NAME/Master
+cp -r $HOME/fall.bot/temp/$first_folder/Caves/save $DEST_PATH$CLUSTER_NAME/Caves
 
 # rename appropriate leveldataoverride
 if [ $TYPE == "main" ]; then
@@ -88,6 +88,6 @@ else
 fi
 
 # delete temp folder and cluster.zip
-rm -rf /home/steam/fall.bot/temp
+rm -rf $HOME/fall.bot/temp
 rm cluster.zip
 exit 0

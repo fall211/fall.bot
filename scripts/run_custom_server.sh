@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-steamcmd_dir="$HOME/.steam/steamcmd"
+steamcmd_dir="$HOME/steamcmd"
 install_dir="$HOME/dontstarvetogether_dedicated_server"
 cluster_name="$1"
 dontstarve_dir="$HOME/.klei/DoNotStarveTogether"
@@ -35,7 +35,7 @@ if [ $3 = "True" ]
 then
 	./steamcmd.sh +force_install_dir "$install_dir" +login anonymous +app_update 343050 -beta updatebeta +quit
 else
-	./steamcmd.sh +force_install_dir "$install_dir" +login anonymous +app_update 343050 -beta none +quit
+	./steamcmd.sh +force_install_dir "$install_dir" +login anonymous +app_update 343050 -beta public +quit
 fi
 
 check_for_file "$install_dir/bin64"
@@ -43,7 +43,6 @@ check_for_file "$install_dir/bin64"
 cd "$install_dir/bin64" || fail
 
 run_shared=(./dontstarve_dedicated_server_nullrenderer_x64)
-run_shared+=(-console)
 run_shared+=(-cluster "$cluster_name")
 run_shared+=(-monitor_parent_process $$)
 

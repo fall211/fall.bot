@@ -19,11 +19,15 @@ import helper_functions as hf
 
 #********** File Paths **********
 
-start_server_path = "/home/steam/start_server.sh"
-stop_server_path = "/home/steam/stop_server.sh"
-restart_server_path = "/home/steam/restart_server.sh"
-make_new_world_path = "/home/steam/fall.bot/make_new_world.sh"
-backup_path = "/home/steam/backup.sh"
+home_dir = os.path.expanduser("~")
+scripts_dir = os.path.join(home_dir, "fall.bot", "scripts")
+
+start_server_path = os.path.join(scripts_dir, "start_server.sh")
+stop_server_path = os.path.join(scripts_dir, "stop_server.sh")
+restart_server_path = os.path.join(scripts_dir, "restart_server.sh")
+make_new_world_path = os.path.join(scripts_dir, "make_new_world.sh")
+backup_path = os.path.join(scripts_dir, "backup.sh")
+
 
 
 
@@ -303,7 +307,9 @@ async def new_world(interaction: discord.Interaction, cluster_name: str, branch:
         return
 
     # check if the cluster name already exists
-    path = f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}" if branch == "main" else f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}"
+    home_dir = os.path.expanduser("~")
+    path = os.path.join(home_dir, ".klei", "DoNotStarveTogether", cluster_name) if branch == "main" else os.path.join(home_dir, ".klei", "DoNotStarveTogetherBetaBranch", cluster_name)
+    
     if os.path.exists(path):
         await interaction.response.send_message("ERROR: Cluster with the given name already exists.", ephemeral=True)
         return

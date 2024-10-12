@@ -9,16 +9,18 @@ import discord
 
 #***************** General Use Functions *****************
 def get_chat_log_path(cluster_name, beta=False):
+    user_home = os.path.expanduser("~")
     if beta:
-        return f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}/Master/server_chat_log.txt"
+        return os.path.join(user_home, ".klei", "DoNotStarveTogetherBetaBranch", cluster_name, "Master", "server_chat_log.txt")
     else:
-        return f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}/Master/server_chat_log.txt"
-    
+        return os.path.join(user_home, ".klei", "DoNotStarveTogether", cluster_name, "Master", "server_chat_log.txt")
+
 def get_server_log_path(cluster_name, beta=False):
+    user_home = os.path.expanduser("~")
     if beta:
-        return f"/home/steam/.klei/DoNotStarveTogetherBetaBranch/{cluster_name}/Master/server_log.txt"
+        return os.path.join(user_home, ".klei", "DoNotStarveTogetherBetaBranch", cluster_name, "Master", "server_log.txt")
     else:
-        return f"/home/steam/.klei/DoNotStarveTogether/{cluster_name}/Master/server_log.txt"
+        return os.path.join(user_home, ".klei", "DoNotStarveTogether", cluster_name, "Master", "server_log.txt")
 
 #get key information about the vm
 #NOTE: This is built around an ubuntu vm so you might have to edit the text processing before deployment
@@ -81,8 +83,9 @@ def get_log_file_length(cluster_name, is_beta_server):
 
 
 def get_cluster_options(is_beta_server):
-    path_live = "/home/steam/.klei/DoNotStarveTogether/"
-    path_beta = "/home/steam/.klei/DoNotStarveTogetherBetaBranch/"
+    user_home = os.path.expanduser("~")
+    path_live = os.path.join(user_home, ".klei", "DoNotStarveTogether")
+    path_beta = os.path.join(user_home, ".klei", "DoNotStarveTogetherBetaBranch")
 
     path = path_beta if is_beta_server else path_live
 
