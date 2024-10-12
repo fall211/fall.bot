@@ -27,11 +27,15 @@ if ! screen -list | grep -q "s"; then
     screen -dmS s
     # change to the bot directory
     screen -S s -X stuff "cd $HOME/fall.bot^M"
+    echo "screen session s started"
 fi
 
 if ! screen -list | grep -q "c"; then
     screen -dmS c
     # change to the bot directory
     screen -S c -X stuff "cd $HOME/fall.bot^M"
+    echo "screen session c started"
 fi
+
+echo "Environment setup complete"
 

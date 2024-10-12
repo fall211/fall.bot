@@ -7,7 +7,7 @@ cluster_name="$1"
 
 cd "$HOME/fall.bot/scripts"
 
-bash setup.sh
+./setup.sh
 
 if [ $2 = "True" ]
 then
