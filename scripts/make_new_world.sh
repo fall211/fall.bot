@@ -76,7 +76,7 @@ else
     DEST_PATH+="DoNotStarveTogetherBetaBranch/"
 fi
 
-cp -r $HOME/.klei/DoNotStarveTogether/Template $DEST_PATH$CLUSTER_NAME
+cp -r $HOME/fall.bot/Templates/DST/Template $DEST_PATH$CLUSTER_NAME
 cp -r $HOME/fall.bot/temp/$first_folder/Master/save $DEST_PATH$CLUSTER_NAME/Master
 cp -r $HOME/fall.bot/temp/$first_folder/Caves/save $DEST_PATH$CLUSTER_NAME/Caves
 
