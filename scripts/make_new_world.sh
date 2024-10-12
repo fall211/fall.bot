@@ -35,7 +35,7 @@ unzip -o -q cluster.zip -d $HOME/fall.bot/temp
 # Get the name of the first folder inside the temp directory, ignoring __MACOSX
 first_folder=$(ls -1 $HOME/fall.bot/temp | grep -v "__MACOSX" | head -n 1)
 
-Check if the required directories exist
+# Check if the required directories exist
 if [ ! -d "$HOME/fall.bot/temp/$first_folder/Master/save" ] || [ ! -d "$HOME/fall.bot/temp/$first_folder/Caves/save" ]; then
     echo "cluster.zip is not valid"
     rm -rf $HOME/fall.bot/temp
