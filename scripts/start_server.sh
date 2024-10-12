@@ -5,6 +5,10 @@ command_master=""
 command_caves=""
 cluster_name="$1"
 
+cd "$HOME/fall.bot/scripts"
+
+bash setup.sh
+
 if [ $2 = "True" ]
 then
 	command_master+="bash run_custom_server.sh $cluster_name Master True^M"
