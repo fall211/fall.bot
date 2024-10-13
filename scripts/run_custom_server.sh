@@ -46,7 +46,7 @@ run_shared=(./dontstarve_dedicated_server_nullrenderer_x64)
 run_shared+=(-cluster "$cluster_name")
 run_shared+=(-monitor_parent_process $$)
 
-if [ $2 = "Caves"]
+if [ $2 = "Caves" ]
 then
 	"${run_shared[@]}" -shard Caves | sed 's/^/Caves:  /'
 else
