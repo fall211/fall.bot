@@ -94,9 +94,9 @@ class SelectionView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
         self.select_branch = discord.ui.Select(placeholder="Select Branch", options=[
-            discord.SelectOption(label="Main", value="main"),
-            discord.SelectOption(label="Beta", value="beta"),
-            discord.SelectOption(label="Cancel", value="Cancel")], row=0, custom_id="branch")
+            discord.SelectOption(label="Main", value="main", emoji="🌲"),
+            discord.SelectOption(label="Beta", value="beta", emoji="🔄"),
+            discord.SelectOption(label="Cancel", value="Cancel", emoji="❌")], row=0, custom_id="branch")
         
         self.select_branch.callback = self.sel_branch
         self.add_item(self.select_branch)
@@ -147,7 +147,7 @@ class PanelMenu(discord.ui.View):
 
 
 #* Start Server
-    @discord.ui.button(label="Start Server", style=discord.ButtonStyle.success, row=1, custom_id="start")
+    @discord.ui.button(label="Start Server", style=discord.ButtonStyle.success, row=1, custom_id="start", emoji="🟢")
     async def start_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         bucket = self.cooldown.get_bucket(interaction.message)
@@ -180,7 +180,7 @@ class PanelMenu(discord.ui.View):
         await msg.delete()
 
 #* Stop server
-    @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop")
+    @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, row=1, custom_id="stop", emoji="🔴")
     async def stop_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         bucket = self.cooldown.get_bucket(interaction.message)
@@ -208,7 +208,7 @@ class PanelMenu(discord.ui.View):
 
 
 #* Restart server
-    @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.blurple, row=1, custom_id="restart")
+    @discord.ui.button(label="Restart Server", style=discord.ButtonStyle.blurple, row=1, custom_id="restart", emoji="🔄")
     async def restart_bash(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         bucket = self.cooldown.get_bucket(interaction.message)
@@ -242,7 +242,7 @@ class PanelMenu(discord.ui.View):
         await msg.delete()
 
 #* Check for DST updates
-    @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, row=2, custom_id="check")
+    @discord.ui.button(label="Check for Updates", style=discord.ButtonStyle.grey, row=2, custom_id="check", emoji="🔍")
     async def check_updates(self, interaction: discord.Interaction, button: discord.ui.Button):
         
         await interaction.response.defer(ephemeral=True, thinking=True)
@@ -253,7 +253,7 @@ class PanelMenu(discord.ui.View):
         else:
             await interaction.followup.send("No updates available.", ephemeral=True)
 
-    @discord.ui.button(label="Change Cluster", style=discord.ButtonStyle.grey, row=2, custom_id="change_branch")
+    @discord.ui.button(label="Change Cluster", style=discord.ButtonStyle.grey, row=2, custom_id="change_branch", emoji="🔄")
     async def change_branch(self, interaction: discord.Interaction, button: discord.ui.Button):
         print(str(interaction.user) + " started a branch/cluster change.")
         global is_beta_server, cluster_name
