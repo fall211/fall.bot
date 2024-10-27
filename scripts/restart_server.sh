@@ -22,7 +22,10 @@ screen -S s -p 0 -X stuff "c_shutdown()^M"
 echo "stopping server..."
 sleep 10
 echo "server shut down"
-
+screen -S c -p 0 -X stuff "^M"
+sleep 1
+screen -S s -p 0 -X stuff "^M"
+sleep 10
 screen -S s -p 0 -X stuff "$commmand_master"
 echo "starting master shard"
 sleep 30
