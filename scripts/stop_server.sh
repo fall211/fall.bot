@@ -3,7 +3,6 @@
 screen -S s -X stuff "c_save()\n"
 sleep 5
 screen -S c -X stuff "c_shutdown()\n"
-sleep 1
 screen -S s -X stuff "c_shutdown()\n"
 sleep 15
 

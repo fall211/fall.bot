@@ -18,8 +18,8 @@ fi
 screen -S s -p 0 -X stuff "c_save()^M"
 echo "saving server..."
 sleep 5
+
 screen -S c -p 0 -X stuff "c_shutdown()^M"
-sleep 1
 screen -S s -p 0 -X stuff "c_shutdown()^M"
 echo "stopping server..."
 sleep 20
@@ -34,7 +34,6 @@ screen -S c -X quit
 
 screen -S s -X stuff "$command_master"
 echo "starting master shard"
-sleep 10
 screen -S c -X stuff "$command_caves"
 echo "starting cave shard"
 

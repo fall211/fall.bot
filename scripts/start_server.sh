@@ -20,9 +20,6 @@ fi
 
 screen -S s -X stuff "$command_master"
 echo "starting master shard"
-sleep 10
 screen -S c -X stuff "$command_caves"
 echo "starting cave shard"
-sleep 10
-echo "both servers started"
 
