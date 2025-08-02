@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+cd "$HOME/fall.bot/scripts"
+
 command_master=""
 command_caves=""
 cluster_name="$1"
@@ -20,16 +22,20 @@ screen -S c -p 0 -X stuff "c_shutdown()^M"
 sleep 1
 screen -S s -p 0 -X stuff "c_shutdown()^M"
 echo "stopping server..."
-sleep 10
+sleep 20
 echo "server shut down"
-screen -S c -p 0 -X stuff "^M"
-sleep 1
-screen -S s -p 0 -X stuff "^M"
-sleep 10
-screen -S s -p 0 -X stuff "$commmand_master"
+
+# delete the screen sessions to make sure it's not running
+screen -S s -X quit
+screen -S c -X quit
+
+# setup again
+./setup.sh
+
+screen -S s -X stuff "$command_master"
 echo "starting master shard"
-sleep 30
-screen -S c -p 0 -X stuff "$commmand_caves"
+sleep 10
+screen -S c -X stuff "$command_caves"
 echo "starting cave shard"
 
 
