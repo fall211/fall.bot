@@ -9,27 +9,32 @@ return {
   ["workshop-2958040648"]={configuration_options={},enabled=false}, --fall's CCC
   ["workshop-2477889104"]={configuration_options={},enabled=true}, --Beefalo Status Bar
   ["workshop-1430042811"]={configuration_options={},enabled=true}, --Less Placement Blocking
-  ["workshop-2995988367"]={configuration_options={},enabled=false}, --Constipated Beefalo
   ["workshop-3004650067"]={configuration_options={},enabled=false}, --No Mouse Movement
-  ["workshop-3156933496"]={configuration_options={},enabled=true}, --wurts lunch box
-  ["workshop-2995988367"]={configuration_options={},enabled=true}, --constipated beefalo
-  ["workshop-3333664358"]={configuration_options={},enabled=true}, -- scoreboard-
-  ["workshop-2334209327"]={ --Heap of Foods
+  ["workshop-3156933496"]={configuration_options={},enabled=false}, --wurts lunch box
+  ["workshop-2995988367"]={configuration_options={},enabled=false}, --constipated beefalo
+  ["workshop-3333664358"]={configuration_options={},enabled=false}, -- scoreboard-
+  ["workshop-2334209327"]={ -- heaps of food
     configuration_options={
-      ["Extra Options"]=0,
-      ["Food Options"]=0,
+      ALCOHOLICDRINKS=true,
+      COFFEEDROPRATE=16,
+      COFFEEDURATION=480,
+      COFFEESPEED=true,
+      FERTILIZERTWEAK=false,
       ["General Options"]=0,
-      HOF_ALCOHOLICDRINKS=0,
-      HOF_COFFEEDROPRATE=4,
-      HOF_COFFEEDURATION=480,
-      HOF_COFFEESPEED=1,
-      HOF_FERTILIZERTWEAK=0,
-      HOF_HUMANMEAT=1,
-      HOF_KEEPFOOD=1,
-      HOF_LANGUAGE="hof_strings",
-      HOF_WARLYMEALGRINDER=0 
+      GIANTSPAWNING=true,
+      HUMANMEAT=true,
+      KEEPFOOD=false,
+      LANGUAGE=false,
+      ["Miscellaneous Options"]=false,
+      MODTRADES=false,
+      RETROFIT=0,
+      ["Retrofit Options"]=false,
+      SCRAPBOOK=true,
+      SEASONALFOOD=false,
+      WARLYMEALGRINDER=false,
+      WARLYRECIPES=true 
     },
-    enabled=false 
+    enabled=true 
   },
   ["workshop-2399658326"]={ --Hamlet Characters
     configuration_options={
