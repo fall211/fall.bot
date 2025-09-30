@@ -438,7 +438,7 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
     name="rewrite_modoverrides",
     description="Rewrites the modoverrides.",
     guild=discord.Object(id=current_id),)
-async def enable_mod(interaction: discord.Interaction, mod_id: str):
+async def enable_mod(interaction: discord.Interaction):
     global cluster_name, is_beta_server
 
     hf.create_modoverrides(cluster_name, is_beta_server)
