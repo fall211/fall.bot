@@ -152,22 +152,19 @@ def parse_modinfo(temp_path, id):
         name = match.group(1)
         default = match.group(2).strip()
         if default.lower() == "true":
-            default_val = "true"
+            default_val = True
         elif default.lower() == "false":
-            default_val = "false"
+            default_val = False
         else:
             try:
-                int_val = int(default)
-                default_val = str(int_val)
+                default_val = int(default)
             except ValueError:
-                default_val = '"' + default.strip('"').strip("'") + '"'
-        if name.isidentifier():
-            options.append(f"  {name}={default_val},")
-        else:
-            options.append(f'  ["{name}"]={default_val},')
-
-    output = "configuration_options={\n" + "\n".join(options) + "\n}\n"
-    return output
+                try:
+                    default_val = float(default)
+                except ValueError:
+                    default_val = default.strip('"').strip("'")
+        options[name] = default_val
+    return options
 
 
 def update_enabled_mods(cluster_name, is_beta_server, mod_id, mod_config, enabled):
@@ -188,12 +185,11 @@ def update_enabled_mods(cluster_name, is_beta_server, mod_id, mod_config, enable
         mods_dict[mod_id]["enabled"] = enabled
     else:
         # Add new entry (must provide config)
-        if mod_config is None:
-            mod_config = {}
         mods_dict[mod_id] = {
-            "configuration_options": mod_config,
+            "configuration_options": mod_config if mod_config is not None else {},
             "enabled": enabled
         }
+
     # Write as pretty-printed JSON, sorted keys for consistency
     with open(enabledmods_path, 'w', encoding='utf-8') as f:
         json.dump(mods_dict, f, indent=2, sort_keys=True)
