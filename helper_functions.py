@@ -24,7 +24,7 @@ def get_server_log_path(cluster_name, beta=False):
     else:
         return os.path.join(user_home, ".klei", "DoNotStarveTogether", cluster_name, "Master", "server_log.txt")
 
-def get_chat_root_world_path(cluster_name):
+def get_chat_root_world_path(cluster_name, beta):
     user_home = os.path.expanduser("~")
     if beta:
         return os.path.join(user_home, ".klei", "DoNotStarveTogetherBetaBranch", cluster_name)
