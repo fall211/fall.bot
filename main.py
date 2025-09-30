@@ -389,6 +389,7 @@ async def relink_chatlog(interaction: discord.Interaction):
     guild=discord.Object(id=current_id),)
 async def enable_mod(interaction: discord.Interaction, mod_id: str):
     global cluster_name, is_beta_server
+    await interaction.response.defer(ephemeral=True)
     # /enable_mod <id>
     # - adds mod id to mods/dedicated_server_mod_setup.lua
     path = os.path.join(home_dir, "dontstarvetogether_dedicated_server", "mods")
@@ -397,7 +398,6 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
     f.close()
     # - downloads mod with steamcmd to temp folder
     if (not hf.has_mod_config(cluster_name, is_beta_server, mod_id)):
-        await interaction.response.defer(ephemeral=True)
         await interaction.followup.send(f"Downloading mod: {mod_id}. This may take a while...", ephemeral=True)
         process = subprocess.Popen([download_mod_path, mod_id, temp_dir])
         process.wait()
@@ -405,12 +405,10 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
         mod_config = hf.parse_modinfo(temp_dir, mod_id)
     # - saves mod id + config to world_enabledmods.txt
         hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, mod_config, True)
-        await interaction.followup.send(f"Mod: {mod_id} enabled on the server.", ephemeral=True)
     else:
         hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, True)
-        await interaction.response.send_message(f"Mod: {mod_id} already enabled on the server.", ephemeral=True)
-        return
     # - recreates modoverride.lua from world_enabledmods.txt
+    print(str(interaction.user) + f" enabled {mod_id}.")
     hf.create_modoverrides(cluster_name, is_beta_server)
     await interaction.followup.send(f"Mods overrides updated.", ephemeral=True)
 
@@ -425,12 +423,9 @@ async def disable_mod(interaction: discord.Interaction, mod_id: str):
     # - removes mod id + config from world_enabledmods.txt]
     if (hf.has_mod_config(cluster_name, is_beta_server, mod_id)):
         hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, False)
-        await interaction.response.send_message(f"Mod: {mod_id} disabled on the server.", ephemeral=True)
-    else:
-        #no mod enabled already
-        await interaction.response.send_message(f"ERR: Mod: {mod_id} not found on the server.", ephemeral=True)
-        return
+
     # - recreates modoverride.lua from world_enabledmo
+    print(str(interaction.user) + f" disabled {mod_id}.")
     hf.create_modoverrides(cluster_name, is_beta_server)
     await interaction.followup.send(f"Mods overrides updated.", ephemeral=True)
     
