@@ -419,7 +419,7 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
     name="disable_mod",
     description="Disables a mod on the server.",
     guild=discord.Object(id=current_id),)
-async def enable_mod(interaction: discord.Interaction, mod_id: str):
+async def disable_mod(interaction: discord.Interaction, mod_id: str):
     global cluster_name, is_beta_server
     # /disable_mod <id>
     # - removes mod id + config from world_enabledmods.txt]
@@ -438,7 +438,7 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
     name="rewrite_modoverrides",
     description="Rewrites the modoverrides.",
     guild=discord.Object(id=current_id),)
-async def enable_mod(interaction: discord.Interaction):
+async def rewrite_modoverrides(interaction: discord.Interaction):
     global cluster_name, is_beta_server
 
     hf.create_modoverrides(cluster_name, is_beta_server)
