@@ -396,7 +396,7 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
         f.write(f'\nServerModSetup("{mod_id}")\n')
     f.close()
     # - downloads mod with steamcmd to temp folder
-    if (!hf.has_mod_config(cluster_name, is_beta_server, mod_id))
+    if (not hf.has_mod_config(cluster_name, is_beta_server, mod_id))
         await interaction.response.defer(ephemeral=True)
         await interaction.followup.send(f"Downloading mod: {mod_id}. This may take a while...", ephemeral=True)
         process = subprocess.Popen([download_mod_path, mod_id, temp_dir])
