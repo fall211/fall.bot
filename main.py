@@ -396,7 +396,7 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
         f.write(f'\nServerModSetup("{mod_id}")\n')
     f.close()
     # - downloads mod with steamcmd to temp folder
-    if (not hf.has_mod_config(cluster_name, is_beta_server, mod_id))
+    if (not hf.has_mod_config(cluster_name, is_beta_server, mod_id)):
         await interaction.response.defer(ephemeral=True)
         await interaction.followup.send(f"Downloading mod: {mod_id}. This may take a while...", ephemeral=True)
         process = subprocess.Popen([download_mod_path, mod_id, temp_dir])
@@ -406,7 +406,7 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
     # - saves mod id + config to world_enabledmods.txt
         hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, mod_config, true)
         await interaction.followup.send(f"Mod: {mod_id} enabled on the server.", ephemeral=True)
-    else
+    else:
         hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, true)
         await interaction.response.send_message(f"Mod: {mod_id} already enabled on the server.", ephemeral=True)
         return
@@ -423,10 +423,10 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
     global cluster_name, is_beta_server
     # /disable_mod <id>
     # - removes mod id + config from world_enabledmods.txt]
-    if (hf.has_mod_config(cluster_name, is_beta_server, mod_id))
+    if (hf.has_mod_config(cluster_name, is_beta_server, mod_id)):
         hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, false)
         await interaction.response.send_message(f"Mod: {mod_id} disabled on the server.", ephemeral=True)
-    else
+    else:
         #no mod enabled already
         await interaction.response.send_message(f"ERR: Mod: {mod_id} not found on the server.", ephemeral=True)
         return
