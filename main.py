@@ -384,7 +384,7 @@ async def relink_chatlog(interaction: discord.Interaction):
     await interaction.delete_original_response()
 
 @tree.command(
-    name="enable_mod"
+    name="enable_mod",
     description="Enables a mod on the server.",
     guild=discord.Object(id=current_id),)
 async def enable_mod(interaction: discord.Interaction, mod_id: str):
@@ -416,7 +416,7 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
 
     
 @tree.command(
-    name="disable_mod"
+    name="disable_mod",
     description="Disables a mod on the server.",
     guild=discord.Object(id=current_id),)
 async def enable_mod(interaction: discord.Interaction, mod_id: str):
