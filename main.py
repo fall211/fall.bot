@@ -404,10 +404,10 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
     # - parses modinfo.lua for default config
         mod_config = hf.parse_modinfo(temp_dir, mod_id)
     # - saves mod id + config to world_enabledmods.txt
-        hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, mod_config, true)
+        hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, mod_config, True)
         await interaction.followup.send(f"Mod: {mod_id} enabled on the server.", ephemeral=True)
     else:
-        hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, true)
+        hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, True)
         await interaction.response.send_message(f"Mod: {mod_id} already enabled on the server.", ephemeral=True)
         return
     # - recreates modoverride.lua from world_enabledmods.txt
@@ -424,7 +424,7 @@ async def enable_mod(interaction: discord.Interaction, mod_id: str):
     # /disable_mod <id>
     # - removes mod id + config from world_enabledmods.txt]
     if (hf.has_mod_config(cluster_name, is_beta_server, mod_id)):
-        hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, false)
+        hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, False)
         await interaction.response.send_message(f"Mod: {mod_id} disabled on the server.", ephemeral=True)
     else:
         #no mod enabled already
