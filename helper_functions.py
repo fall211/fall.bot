@@ -189,7 +189,7 @@ def update_enabled_mods(cluster_name, is_beta_server, mod_id, mod_config, enable
     else:
         # Add new entry (must provide config)
         if mod_config is None:
-            raise ValueError("mod_config required to add a new mod")
+            mod_config = "configuration_options={}"
         mods_dict[mod_id] = {
             "configuration_options": mod_config,
             "enabled": enabled
