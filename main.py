@@ -442,7 +442,7 @@ async def rewrite_modoverrides(interaction: discord.Interaction):
     global cluster_name, is_beta_server
 
     hf.create_modoverrides(cluster_name, is_beta_server)
-    await interaction.followup.send(f"Mods overrides updated.", ephemeral=True)
+    await interaction.response.send_message(f"Mods overrides updated.", ephemeral=True)
     
 #********** Loops #**********
 @tasks.loop(seconds=5)
