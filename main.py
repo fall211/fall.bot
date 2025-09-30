@@ -21,12 +21,16 @@ import helper_functions as hf
 
 home_dir = os.path.expanduser("~")
 scripts_dir = os.path.join(home_dir, "fall.bot", "scripts")
+info_dir = os.path.join(home_dir, "fall.bot", "info")
+temp_dir = os.path.join(home_dir, "fall.bot", "temp")
 
 start_server_path = os.path.join(scripts_dir, "start_server.sh")
 stop_server_path = os.path.join(scripts_dir, "stop_server.sh")
 restart_server_path = os.path.join(scripts_dir, "restart_server.sh")
 make_new_world_path = os.path.join(scripts_dir, "make_new_world.sh")
 backup_path = os.path.join(scripts_dir, "backup.sh")
+
+download_mod_path = os.path.join(scripts_dir, "download_mod.sh")
 
 
 
@@ -379,7 +383,57 @@ async def relink_chatlog(interaction: discord.Interaction):
     await asyncio.sleep(5)
     await interaction.delete_original_response()
 
+@tree.command(
+    name="enable_mod"
+    description="Enables a mod on the server.",
+    guild=discord.Object(id=current_id),)
+async def enable_mod(interaction: discord.Interaction, mod_id: str):
+    global cluster_name, is_beta_server
+    # /enable_mod <id>
+    # - adds mod id to mods/dedicated_server_mod_setup.lua
+    path = os.path.join(home_dir, "dontstarvetogether_dedicated_server", "mods")
+    with open(os.path.join(path, "dedicated_server_mods_setup.lua"), "a") as f:
+        f.write(f'\nServerModSetup("{mod_id}")\n')
+    f.close()
+    # - downloads mod with steamcmd to temp folder
+    if (!hf.has_mod_config(cluster_name, is_beta_server, mod_id))
+        await interaction.response.defer(ephemeral=True)
+        await interaction.followup.send(f"Downloading mod: {mod_id}. This may take a while...", ephemeral=True)
+        process = subprocess.Popen([download_mod_path, mod_id, temp_dir])
+        process.wait()
+    # - parses modinfo.lua for default config
+        mod_config = hf.parse_modinfo(temp_dir, mod_id)
+    # - saves mod id + config to world_enabledmods.txt
+        hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, mod_config, true)
+        await interaction.followup.send(f"Mod: {mod_id} enabled on the server.", ephemeral=True)
+    else
+        hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, true)
+        await interaction.response.send_message(f"Mod: {mod_id} already enabled on the server.", ephemeral=True)
+        return
+    # - recreates modoverride.lua from world_enabledmods.txt
+    hf.create_modoverrides(cluster_name, is_beta_server)
+    await interaction.followup.send(f"Mods overrides updated.", ephemeral=True)
 
+    
+@tree.command(
+    name="disable_mod"
+    description="Disables a mod on the server.",
+    guild=discord.Object(id=current_id),)
+async def enable_mod(interaction: discord.Interaction, mod_id: str):
+    global cluster_name, is_beta_server
+    # /disable_mod <id>
+    # - removes mod id + config from world_enabledmods.txt]
+    if (hf.has_mod_config(cluster_name, is_beta_server, mod_id))
+        hf.update_enabled_mods(cluster_name, is_beta_server, mod_id, None, false)
+        await interaction.response.send_message(f"Mod: {mod_id} disabled on the server.", ephemeral=True)
+    else
+        #no mod enabled already
+        await interaction.response.send_message(f"ERR: Mod: {mod_id} not found on the server.", ephemeral=True)
+        return
+    # - recreates modoverride.lua from world_enabledmo
+    hf.create_modoverrides(cluster_name, is_beta_server)
+    await interaction.followup.send(f"Mods overrides updated.", ephemeral=True)
+    
 #********** Loops #**********
 @tasks.loop(seconds=5)
 async def send_chat_log():
