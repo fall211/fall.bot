@@ -111,7 +111,7 @@ class SelectionView(discord.ui.View):
         if self.select_branch.values[0] == "Cancel":
             self.remove_item(self.select_branch)
             self.stop()
-            await interaction.edit_original_response(view=self, content="Cancelled.")
+            await interaction.edit_original_response(view=None, content="Cancelled.")
             await asyncio.sleep(5)
             await interaction.delete_original_response()
             return
@@ -427,7 +427,7 @@ async def disable_mod(interaction: discord.Interaction, mod_id: str):
     # - recreates modoverride.lua from world_enabledmo
     print(str(interaction.user) + f" disabled {mod_id}.")
     hf.create_modoverrides(cluster_name, is_beta_server)
-    await interaction.followup.send(f"Mods overrides updated.", ephemeral=True)
+    await interaction.followup.send(f"Mod overrides updated.", ephemeral=True)
     
 @tree.command(
     name="rewrite_modoverrides",
@@ -437,7 +437,7 @@ async def rewrite_modoverrides(interaction: discord.Interaction):
     global cluster_name, is_beta_server
 
     hf.create_modoverrides(cluster_name, is_beta_server)
-    await interaction.response.send_message(f"Mods overrides updated.", ephemeral=True)
+    await interaction.response.send_message(f"Mod overrides updated.", ephemeral=True)
     
 #********** Loops #**********
 @tasks.loop(seconds=5)
