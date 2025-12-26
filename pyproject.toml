@@ -1,0 +1,5 @@
+[tool.basedpyright]
+typeCheckingMode = "basic"
+
+reportAttributeAccessIssue = false
+reportOptionalMemberAccess = false
