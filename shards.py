@@ -3,15 +3,15 @@ import asyncio
 import subprocess
 from pathlib import Path
 from typing import Dict, Optional
+from config import DST_CLUSTERS_DIR, DST_BETA_CLUSTERS_DIR, DST_DEDICATED_SERVER_DIR, DST_DEDICATED_SERVER_EXE_DIR, STEAMCMD_DIR, BETA_BRANCH_NAME, PUBLIC_BRANCH_NAME
 
 class Shard:
-    def __init__(self, cluster: str, shard_name: str, is_beta: bool, server_dir: Path):
+    def __init__(self, cluster: str, shard_name: str, is_beta: bool):
         self.cluster = cluster
         self.shard_name = shard_name
         self.is_beta = is_beta
-        self.server_dir = server_dir
         self.process: Optional[subprocess.Popen] = None
-        self.exe = "dontstarve_dedicated_server_nullrenderer_x64"  # adjust if needed
+        self.exe = "dontstarve_dedicated_server_nullrenderer_x64"
 
     @property
     def args(self):
@@ -19,9 +19,6 @@ class Shard:
             self.exe,
             "-cluster", self.cluster,
             "-shard", self.shard_name,
-            "-persistent_storage_root", str(self.server_dir.parent.parent),
-            "-conf_dir", "DoNotStarveTogether" if not self.is_beta else "DoNotStarveTogetherBetaBranch",
-            "-backup_logs",
         ]
         return base
 
@@ -36,7 +33,7 @@ class Shard:
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=0,
-            cwd=str(self.server_dir)
+            cwd=str(DST_DEDICATED_SERVER_EXE_DIR)
         )
         print(f"Started {self.shard_name} shard for {self.cluster} (beta={self.is_beta})")
 
@@ -80,29 +77,38 @@ class ShardManager:
         self.shards: Dict[str, Shard] = {}  # key: "cluster:shard_name"
 
     def _get_cluster_dir(self):
-        conf_dir = "DoNotStarveTogetherBetaBranch" if self.state["is_beta"] else "DoNotStarveTogether"
-        return self.base_dir / conf_dir / self.state["current_cluster"]
+        return DST_BETA_CLUSTERS_DIR if self.state["is_beta"] else DST_CLUSTERS_DIR
 
     async def start_world(self):
+        # Update steamcmd first
+        steamcmd_path = STEAMCMD_DIR / "steamcmd.sh"
+        beta = BETA_BRANCH_NAME if self.state["is_beta"] else PUBLIC_BRANCH_NAME
+        update_command = f"{steamcmd_path} +login anonymous +force_install_dir {DST_DEDICATED_SERVER_DIR} +app_update 343050 -beta {beta} +quit"
+        steamcmd_update_process = await asyncio.create_subprocess_shell(update_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+        stdout, stderr = await steamcmd_update_process.communicate()
+        if steamcmd_update_process.returncode != 0:
+            print(f"SteamCMD update failed: {stdout.decode()}")
+            return 1
+
+
         cluster_dir = self._get_cluster_dir()
         if not cluster_dir.exists():
             raise FileNotFoundError(f"Cluster directory not found: {cluster_dir}")
 
-        # Usually Master + Caves
-        for shard_name in ["Master", "Caves"]:
-            key = f"{self.state['current_cluster']}:{shard_name}"
-            shard_dir = cluster_dir / shard_name
-            if not shard_dir.exists():
-                continue  # e.g. single-shard world
+        for shard_path in cluster_dir.iterdir():
+            if shard_path.is_dir():
+                shard_name = shard_path.name  # extract string name
+                key = f"{self.state['current_cluster']}:{shard_name}"
+                shard_dir = shard_path
 
-            shard = Shard(
-                cluster=self.state["current_cluster"],
-                shard_name=shard_name,
-                is_beta=self.state["is_beta"],
-                server_dir=shard_dir,
-            )
-            await shard.start()
-            self.shards[key] = shard
+                shard = Shard(
+                    cluster=self.state["current_cluster"],
+                    shard_name=shard_name,
+                    is_beta=self.state["is_beta"]
+                )
+                await shard.start()
+                self.shards[key] = shard
 
     async def stop_world(self, graceful=True):
         tasks = [shard.stop(graceful=graceful) for shard in self.shards.values()]
@@ -115,10 +121,11 @@ class ShardManager:
         await self.start_world()
 
     def send_announce(self, message: str):
-        # Most commands only need to go to Master
         master_key = f"{self.state['current_cluster']}:Master"
         if master_key in self.shards:
             self.shards[master_key].send_command(f'c_announce("{message}")')
+        else:
+            return
 
     def is_world_running(self) -> bool:
         return any(shard.is_running() for shard in self.shards.values())
