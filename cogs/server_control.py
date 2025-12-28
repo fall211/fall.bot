@@ -32,12 +32,14 @@ class PanelMenu(View):
         await interaction.followup.send("Restarting server...", ephemeral=True)
 
     @discord.ui.select(
-        placeholder="Select an option",
+        placeholder="Select a Cluster",
         options=[
             discord.SelectOption(label="Option 1", value="option_1"),
             discord.SelectOption(label="Option 2", value="option_2"),
             discord.SelectOption(label="Option 3", value="option_3"),
-        ]
+        ],
+        row=2,
+        custom_id="change_branch"
     )
     async def select(self, interaction: discord.Interaction, select: discord.ui.Select):
         await interaction.response.send_message(f"You selected {select.values[0]}", ephemeral=True)
