@@ -7,11 +7,12 @@ import subprocess
 import requests
 import asyncio
 from pathlib import Path
+from config import *
 
 class AdminCommandsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.home_dir = os.path.expanduser("~")
+        self.home_dir = HOME_DIR
         self.scripts_dir = Path(self.home_dir) / "fall.bot" / "scripts"
 
     @app_commands.command(name="new_world", description="Creates a new world. Requires a zip of the server files.")
@@ -59,26 +60,6 @@ class AdminCommandsCog(commands.Cog):
             await interaction.followup.send(f"Successfully created new world: `{cluster_name}` ({branch}/{difficulty})", ephemeral=True)
         else:
             await interaction.followup.send("Failed to create world. Check server logs.", ephemeral=True)
-
-    @app_commands.command(name="backup", description="Backs up the current world/cluster")
-    @app_commands.describe(cluster="Cluster name (default: current)", branch="main or beta (default: current)")
-    async def backup(self, interaction: discord.Interaction, cluster: str = None, branch: str = None):
-        await interaction.response.defer(ephemeral=True)
-
-        cluster = cluster or self.bot.state["current_cluster"]
-        branch = (branch or ("beta" if self.bot.state["is_beta"] else "main")).lower()
-        if branch.startswith("b"):
-            branch = "beta"
-        else:
-            branch = "main"
-
-        script_path = self.scripts_dir / "backup.sh"
-        result = subprocess.run([str(script_path), cluster, branch], capture_output=True, text=True)
-
-        if result.returncode == 0:
-            await interaction.followup.send(f"Backup completed for `{branch}/{cluster}`.", ephemeral=True)
-        else:
-            await interaction.followup.send(f"Backup failed:\n```{result.stderr[-500:]}```", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(AdminCommandsCog(bot))

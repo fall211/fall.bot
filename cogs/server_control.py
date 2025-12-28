@@ -14,7 +14,7 @@ class PanelMenu(View):
     async def start(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
         await self.bot.shard_manager.start_world()
-        await interaction.followup.send("Server starting...", ephemeral=True)
+        await interaction.followup.send("Server started.", ephemeral=True)
         # TODO: update presence, start chat log task, etc.
 
     @discord.ui.button(label="Stop Server", style=discord.ButtonStyle.danger, emoji="🔴", custom_id="stop_server")
@@ -30,6 +30,17 @@ class PanelMenu(View):
         await interaction.response.defer(ephemeral=True)
         await self.bot.shard_manager.restart_world()
         await interaction.followup.send("Restarting server...", ephemeral=True)
+
+    @discord.ui.select(
+        placeholder="Select an option",
+        options=[
+            discord.SelectOption(label="Option 1", value="option_1"),
+            discord.SelectOption(label="Option 2", value="option_2"),
+            discord.SelectOption(label="Option 3", value="option_3"),
+        ]
+    )
+    async def select(self, interaction: discord.Interaction, select: discord.ui.Select):
+        await interaction.response.send_message(f"You selected {select.values[0]}", ephemeral=True)
 
 class ServerControlCog(commands.Cog):
     def __init__(self, bot):
