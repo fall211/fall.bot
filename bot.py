@@ -23,8 +23,6 @@ class FallBot(commands.Bot):
         # Add persistent views, leave wrong guilds, etc.
         save_state(self.state)
 
-        await self.tree.sync(guild=discord.Object(id=CURRENT_SERVER_ID))
-
         async for guild in bot.fetch_guilds():
             if guild.id not in ALLOWED_SERVERS:
                 await guild.leave()
