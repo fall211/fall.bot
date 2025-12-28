@@ -83,7 +83,7 @@ class ShardManager:
         # Update steamcmd first
         steamcmd_path = STEAMCMD_DIR / "steamcmd.sh"
         beta = BETA_BRANCH_NAME if self.state["is_beta"] else PUBLIC_BRANCH_NAME
-        update_command = f"{steamcmd_path} +login anonymous +force_install_dir {DST_DEDICATED_SERVER_DIR} +app_update 343050 -beta {beta} +quit"
+        update_command = f"{steamcmd_path} +force_install_dir {DST_DEDICATED_SERVER_DIR} +login anonymous +app_update 343050 -beta {beta} +quit"
         steamcmd_update_process = await asyncio.create_subprocess_shell(update_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         stdout, stderr = await steamcmd_update_process.communicate()

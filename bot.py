@@ -22,9 +22,8 @@ class FallBot(commands.Bot):
         print(f"Logged in as {self.user}")
         # Add persistent views, leave wrong guilds, etc.
         save_state(self.state)
-        
-        await bot.sync(guild=discord.Object(id=CURRENT_SERVER_ID))
-        self.synced = True
+
+        await self.tree.sync(guild=discord.Object(id=CURRENT_SERVER_ID))
 
         async for guild in bot.fetch_guilds():
             if guild.id not in ALLOWED_SERVERS:
