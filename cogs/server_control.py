@@ -62,12 +62,12 @@ class SelectionView(discord.ui.View):
             + " changed the cluster to "
             + self.select_cluster.values[0]
         )
-        self.state.current_cluster = self.select_cluster.values[0]
+        self.bot.state["current_cluster"] = self.select_cluster.values[0]
         self.remove_item(self.select_cluster)
         self.stop()
         branch = "Beta" if self.bot.state["is_beta"] else "Main"
         await interaction.edit_original_response(
-            view=self, content=f"Changed cluster to {self.state.current_cluster} on {branch} Branch."
+            view=self, content=f"Changed cluster to {self.bot.state["current_cluster"]} on {branch} Branch."
         )
 
 class PanelMenu(View):
