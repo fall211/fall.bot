@@ -33,6 +33,12 @@ class FallBot(commands.Bot):
             )
         )
 
+    # def get_state(self):
+    #     return load_state()
+
+    # def edit_state(self, new_state):
+    #     save_state(new_state)
+
 bot = FallBot()
 bot.current_key = KEY
 bot.run(bot.current_key)

@@ -39,9 +39,9 @@ class SelectionView(discord.ui.View):
             + self.select_branch.values[0]
         )
 
-        self.bot.state.is_beta = True if self.select_branch.values[0] == "beta" else False
+        self.bot.state["is_beta"] = True if self.select_branch.values[0] == "beta" else False
         self.remove_item(self.select_branch)
-        self.create_cluster_selection(self.bot.state.is_beta)
+        self.create_cluster_selection(self.bot.state["is_beta"])
         self.add_item(self.select_cluster)
         await interaction.edit_original_response(view=self)
 
@@ -65,7 +65,7 @@ class SelectionView(discord.ui.View):
         self.state.current_cluster = self.select_cluster.values[0]
         self.remove_item(self.select_cluster)
         self.stop()
-        branch = "Beta" if self.bot.state.is_beta else "Main"
+        branch = "Beta" if self.bot.state["is_beta"] else "Main"
         await interaction.edit_original_response(
             view=self, content=f"Changed cluster to {self.state.current_cluster} on {branch} Branch."
         )
@@ -107,7 +107,7 @@ class PanelMenu(View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         print(str(interaction.user) + " started a branch/cluster change.")
-        text = f"Currently accessing {self.bot.state.current_cluster} on the {'Beta' if self.bot.state.is_beta else 'Main'} Branch."
+        text = f"Currently accessing {self.bot.state["current_cluster"]} on the {'Beta' if self.bot.state["is_beta"] else 'Main'} Branch."
         await interaction.response.send_message(
             content=text, view=SelectionView(self.bot), ephemeral=True
         )
