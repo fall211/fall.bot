@@ -41,14 +41,14 @@ class SelectionView(discord.ui.View):
 
         self.bot.state["is_beta"] = True if self.select_branch.values[0] == "beta" else False
         self.remove_item(self.select_branch)
-        self.create_cluster_selection(self.bot.state["is_beta"])
+        self.create_cluster_selection()
         self.add_item(self.select_cluster)
         await interaction.edit_original_response(view=self)
 
-    def create_cluster_selection(self, is_beta_server):
+    def create_cluster_selection(self):
         self.select_cluster = discord.ui.Select(
             placeholder="Select Cluster",
-            options=hf.get_cluster_options(is_beta_server),
+            options=hf.get_cluster_options(self.bot.state["is_beta"]),
             row=0,
             custom_id="cluster",
         )
@@ -57,6 +57,17 @@ class SelectionView(discord.ui.View):
 
     async def sel_cluster(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
+
+        if (self.select_cluster.values[0] == "nullfailsafe"):
+            print("No clusters found!")
+            self.remove_item(self.select_cluster)
+            self.stop()
+            await interaction.edit_original_response(
+                view=self, content=f"Please make a world cluster using /new_world !"
+            )
+            return
+
+
         print(
             str(interaction.user)
             + " changed the cluster to "

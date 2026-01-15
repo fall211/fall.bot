@@ -26,7 +26,7 @@ class ChatRelayCog(commands.Cog):
         cluster = self.bot.state["current_cluster"]
         is_beta = self.bot.state["is_beta"]
         path = hf.get_chat_log_path(cluster, is_beta)
-        if not path.exists():
+        if not path.is_file():
             return
 
         current_count = hf.get_log_file_length(cluster, is_beta)

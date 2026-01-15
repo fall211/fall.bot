@@ -3,13 +3,13 @@ import asyncio
 import subprocess
 from pathlib import Path
 from typing import Dict, Optional
-from config import DST_CLUSTERS_DIR, DST_BETA_CLUSTERS_DIR, DST_DEDICATED_SERVER_DIR, DST_DEDICATED_SERVER_EXE_DIR, STEAMCMD_DIR, BETA_BRANCH_NAME, PUBLIC_BRANCH_NAME
+from config import DST_SAVES_DIR, DST_BETA_SAVES_DIR, DST_DEDICATED_SERVER_DIR, DST_DEDICATED_SERVER_EXE_DIR, STEAMCMD_DIR, BETA_BRANCH_NAME, PUBLIC_BRANCH_NAME
 
 class Shard:
-    def __init__(self, cluster: str, shard_name: str, is_beta: bool):
+    def __init__(self, cluster: str, shard_name, path: Path):
         self.cluster = cluster
         self.shard_name = shard_name
-        self.is_beta = is_beta
+        self.path = path
         self.process: Optional[subprocess.Popen] = None
         self.exe = "./dontstarve_dedicated_server_nullrenderer_x64"
 
@@ -26,8 +26,6 @@ class Shard:
         if self.process and self.process.poll() is None:
             return  # already running
 
-        print("CWD:", DST_DEDICATED_SERVER_EXE_DIR)
-        print("Command:", self.args)
         self.process = subprocess.Popen(
             self.args,
             stdin=subprocess.PIPE,
@@ -78,12 +76,11 @@ class ShardManager:
         self.base_dir = server_base_dir
         self.shards: Dict[str, Shard] = {}  # key: "cluster:shard_name"
 
-    def _get_cluster_dir(self):
-        return DST_BETA_CLUSTERS_DIR if self.state["is_beta"] else DST_CLUSTERS_DIR
+    def _get_saves_dir(self):
+        return DST_BETA_SAVES_DIR if self.state["is_beta"] else DST_SAVES_DIR
 
     async def start_world(self):
         # Update steamcmd first
-        print("Updating steamcmd...")
         steamcmd_path = STEAMCMD_DIR / "steamcmd.sh"
         beta = BETA_BRANCH_NAME if self.state["is_beta"] else PUBLIC_BRANCH_NAME
         update_command = f"{steamcmd_path} +force_install_dir {DST_DEDICATED_SERVER_DIR} +login anonymous +app_update 343050 -beta {beta} +quit"
@@ -95,7 +92,7 @@ class ShardManager:
             return 1
 
 
-        cluster_dir = self._get_cluster_dir()
+        cluster_dir = self._get_saves_dir() / self.bot.state["current_cluster"]
         if not cluster_dir.exists():
             raise FileNotFoundError(f"Cluster directory not found: {cluster_dir}")
 
@@ -104,12 +101,11 @@ class ShardManager:
                 shard_name = shard_path.name  # extract string name
                 print(f"found shard: {shard_name}")
                 key = f"{self.state['current_cluster']}:{shard_name}"
-                shard_dir = shard_path
 
                 shard = Shard(
                     cluster=self.state["current_cluster"],
                     shard_name=shard_name,
-                    is_beta=self.state["is_beta"]
+                    path=shard_path
                 )
                 await shard.start()
                 self.shards[key] = shard

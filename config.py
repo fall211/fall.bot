@@ -25,8 +25,8 @@ DOWNLOAD_MOD_SCRIPT = SCRIPTS_DIR / "download_mod.sh"
 
 # DST-related dirs
 KLEI_ROOT = Path(HOME_DIR) / ".klei"
-DST_CLUSTERS_DIR = KLEI_ROOT / "DoNotStarveTogether"
-DST_BETA_CLUSTERS_DIR = KLEI_ROOT / "DoNotStarveTogetherBetaBranch"
+DST_SAVES_DIR = KLEI_ROOT / "DoNotStarveTogether"
+DST_BETA_SAVES_DIR = KLEI_ROOT / "DoNotStarveTogetherBetaBranch"
 DST_DEDICATED_SERVER_DIR = Path(HOME_DIR) / "dontstarvetogether_dedicated_server"
 DST_DEDICATED_SERVER_EXE_DIR = DST_DEDICATED_SERVER_DIR / "bin64"
 MODS_DIR = DST_DEDICATED_SERVER_DIR / "mods"

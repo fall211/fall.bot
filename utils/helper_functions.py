@@ -1,67 +1,29 @@
 import json
 import os
+from pathlib import Path
 import re
 import subprocess
 
 import discord
 import requests
 
+from config import DST_BETA_SAVES_DIR, DST_SAVES_DIR
 from utils import forum_scraper as fs
 
 
 # ***************** General Use Functions *****************
 def get_chat_log_path(cluster_name, beta=False):
-    user_home = os.path.expanduser("~")
     if beta:
-        return os.path.join(
-            user_home,
-            ".klei",
-            "DoNotStarveTogetherBetaBranch",
-            cluster_name,
-            "Master",
-            "server_chat_log.txt",
-        )
+        return DST_BETA_SAVES_DIR / cluster_name / "Master" / "server_chat_lot.txt"
     else:
-        return os.path.join(
-            user_home,
-            ".klei",
-            "DoNotStarveTogether",
-            cluster_name,
-            "Master",
-            "server_chat_log.txt",
-        )
+        return DST_SAVES_DIR / cluster_name / "Master" / "server_chat_lot.txt"
 
 
-def get_server_log_path(cluster_name, beta=False):
-    user_home = os.path.expanduser("~")
+def get_server_log_path(cluster_name, beta=False) -> Path:
     if beta:
-        return os.path.join(
-            user_home,
-            ".klei",
-            "DoNotStarveTogetherBetaBranch",
-            cluster_name,
-            "Master",
-            "server_log.txt",
-        )
+        return DST_BETA_SAVES_DIR / cluster_name / "Master" / "server_lot.txt"
     else:
-        return os.path.join(
-            user_home,
-            ".klei",
-            "DoNotStarveTogether",
-            cluster_name,
-            "Master",
-            "server_log.txt",
-        )
-
-
-def get_chat_root_world_path(cluster_name, beta):
-    user_home = os.path.expanduser("~")
-    if beta:
-        return os.path.join(
-            user_home, ".klei", "DoNotStarveTogetherBetaBranch", cluster_name
-        )
-    else:
-        return os.path.join(user_home, ".klei", "DoNotStarveTogether", cluster_name)
+        return DST_SAVES_DIR / cluster_name / "Master" / "server_lot.txt"
 
 
 def get_vm_info():
@@ -88,21 +50,28 @@ def get_log_file_length(cluster_name, is_beta_server):
     return len
 
 
-def get_cluster_options(is_beta_server):
-    user_home = os.path.expanduser("~")
-    path_live = os.path.join(user_home, ".klei", "DoNotStarveTogether")
-    path_beta = os.path.join(user_home, ".klei", "DoNotStarveTogetherBetaBranch")
-
-    path = path_beta if is_beta_server else path_live
-
-    names = os.listdir(path)
-
+def get_cluster_options(is_beta_server: bool):
+    path = DST_BETA_SAVES_DIR if is_beta_server else DST_SAVES_DIR
     options = []
-    for name in names:
-        if name == "Template":
+
+    for entry in path.iterdir():
+        if not entry.is_dir():
             continue
-        selection = discord.SelectOption(label=name, value=name)
+        if entry.name == "Template":
+            continue
+
+        selection = discord.SelectOption(
+            label=entry.name,
+            value=entry.name
+        )
         options.append(selection)
+
+    if options.count == 0:
+        failsafe = discord.SelectOption(
+            label="No clusters found!",
+            value="nullfailsafe"
+        )
+        options.append(failsafe)
 
     return options
 
