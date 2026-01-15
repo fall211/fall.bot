@@ -36,7 +36,7 @@ class Shard:
             bufsize=0,
             cwd=DST_DEDICATED_SERVER_EXE_DIR
         )
-        print(f"Started {self.shard_name} shard for {self.cluster} (beta={self.is_beta})")
+        print(f"Started {self.shard_name} shard for {self.cluster}")
 
     async def stop(self, graceful=True):
         if not self.process or self.process.poll() is not None:
