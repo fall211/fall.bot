@@ -26,6 +26,8 @@ class Shard:
         if self.process and self.process.poll() is None:
             return  # already running
 
+        print("CWD:", DST_DEDICATED_SERVER_EXE_DIR)
+        print("Command:", self.args)
         self.process = subprocess.Popen(
             self.args,
             stdin=subprocess.PIPE,
