@@ -18,6 +18,8 @@ class FallBot(commands.Bot):
         await self.load_extension("cogs.admin_commands")
         await self.load_extension("cogs.chat_relay")
 
+        await bot.tree.sync(guild=discord.Object(id=CURRENT_SERVER_ID))
+
     async def on_ready(self):
         print(f"Logged in as {self.user}")
         # Add persistent views, leave wrong guilds, etc.
@@ -26,8 +28,6 @@ class FallBot(commands.Bot):
         async for guild in bot.fetch_guilds():
             if guild.id not in ALLOWED_SERVERS:
                 await guild.leave()
-            else:
-                await bot.tree.sync(guild=discord.Object(id=CURRENT_SERVER_ID))
 
         await bot.change_presence(
             activity=discord.Activity(
