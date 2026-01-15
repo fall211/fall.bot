@@ -38,5 +38,5 @@ STEAMCMD_DIR= Path(HOME_DIR) / "steamcmd"
 
 
 CHAT_LOG_CHANNEL_ID = chat_log_channel_id if KEY == key_fallBot else test_channel_id
-CURRENT_SERVER_ID = server_id if KEY == key_fallBot else server_id
+CURRENT_SERVER_ID = server_id if KEY == key_fallBot else test_id
 ALLOWED_SERVERS = [server_id, test_id]
