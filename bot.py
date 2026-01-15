@@ -11,7 +11,7 @@ class FallBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="!", intents=discord.Intents.all(), help_command=None)
         self.state = load_state()
-        self.shard_manager = ShardManager(self.state, Path(HOME_DIR) / ".klei")
+        self.shard_manager = ShardManager(self)
 
     async def setup_hook(self):
         await self.load_extension("cogs.server_control")

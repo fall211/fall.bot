@@ -2,6 +2,7 @@
 import asyncio
 import subprocess
 from pathlib import Path
+from discord.ext import commands
 from typing import Dict, Optional
 from config import DST_SAVES_DIR, DST_BETA_SAVES_DIR, DST_DEDICATED_SERVER_DIR, DST_DEDICATED_SERVER_EXE_DIR, STEAMCMD_DIR, BETA_BRANCH_NAME, PUBLIC_BRANCH_NAME
 
@@ -71,18 +72,17 @@ class Shard:
 
 
 class ShardManager:
-    def __init__(self, state: dict, server_base_dir: Path):
-        self.state = state
-        self.base_dir = server_base_dir
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
         self.shards: Dict[str, Shard] = {}  # key: "cluster:shard_name"
 
     def _get_saves_dir(self):
-        return DST_BETA_SAVES_DIR if self.state["is_beta"] else DST_SAVES_DIR
+        return DST_BETA_SAVES_DIR if self.bot.state["is_beta"] else DST_SAVES_DIR
 
     async def start_world(self):
         # Update steamcmd first
         steamcmd_path = STEAMCMD_DIR / "steamcmd.sh"
-        beta = BETA_BRANCH_NAME if self.state["is_beta"] else PUBLIC_BRANCH_NAME
+        beta = BETA_BRANCH_NAME if self.bot.state["is_beta"] else PUBLIC_BRANCH_NAME
         update_command = f"{steamcmd_path} +force_install_dir {DST_DEDICATED_SERVER_DIR} +login anonymous +app_update 343050 -beta {beta} +quit"
         steamcmd_update_process = await asyncio.create_subprocess_shell(update_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -100,10 +100,10 @@ class ShardManager:
             if shard_path.is_dir():
                 shard_name = shard_path.name  # extract string name
                 print(f"found shard: {shard_name}")
-                key = f"{self.state['current_cluster']}:{shard_name}"
+                key = f"{self.bot.state['current_cluster']}:{shard_name}"
 
                 shard = Shard(
-                    cluster=self.state["current_cluster"],
+                    cluster=self.bot.state["current_cluster"],
                     shard_name=shard_name,
                     path=shard_path
                 )
@@ -121,7 +121,7 @@ class ShardManager:
         await self.start_world()
 
     def send_announce(self, message: str):
-        master_key = f"{self.state['current_cluster']}:Master"
+        master_key = f"{self.bot.state['current_cluster']}:Master"
         if master_key in self.shards:
             self.shards[master_key].send_command(f'c_announce("{message}")')
         else:
