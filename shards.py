@@ -33,7 +33,7 @@ class Shard:
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=0,
-            cwd=str(DST_DEDICATED_SERVER_EXE_DIR)
+            cwd=DST_DEDICATED_SERVER_EXE_DIR
         )
         print(f"Started {self.shard_name} shard for {self.cluster} (beta={self.is_beta})")
 
@@ -81,6 +81,7 @@ class ShardManager:
 
     async def start_world(self):
         # Update steamcmd first
+        print("Updating steamcmd...")
         steamcmd_path = STEAMCMD_DIR / "steamcmd.sh"
         beta = BETA_BRANCH_NAME if self.state["is_beta"] else PUBLIC_BRANCH_NAME
         update_command = f"{steamcmd_path} +force_install_dir {DST_DEDICATED_SERVER_DIR} +login anonymous +app_update 343050 -beta {beta} +quit"
@@ -99,6 +100,7 @@ class ShardManager:
         for shard_path in cluster_dir.iterdir():
             if shard_path.is_dir():
                 shard_name = shard_path.name  # extract string name
+                print(f"found shard: {shard_name}")
                 key = f"{self.state['current_cluster']}:{shard_name}"
                 shard_dir = shard_path
 
