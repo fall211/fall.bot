@@ -9,7 +9,7 @@ from pathlib import Path
 
 class FallBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix="!", intents=discord.Intents.all(), help_command=None)
+        super().__init__(command_prefix='!', intents=discord.Intents.all(), help_command=None)
         self.state = load_state()
         self.shard_manager = ShardManager(self)
 
@@ -26,6 +26,8 @@ class FallBot(commands.Bot):
         async for guild in bot.fetch_guilds():
             if guild.id not in ALLOWED_SERVERS:
                 await guild.leave()
+            else:
+                await bot.tree.sync(guild=discord.Object(id=CURRENT_SERVER_ID))
 
         await bot.change_presence(
             activity=discord.Activity(
