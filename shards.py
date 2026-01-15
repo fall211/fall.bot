@@ -70,6 +70,10 @@ class Shard:
     def is_running(self) -> bool:
         return self.process is not None and self.process.poll() is None
 
+    def peek_output(self, line_count: int) -> list[str]:
+        lines = self.process.stdout.readlines()
+        target_lines = lines[-line_count:]
+        return target_lines
 
 class ShardManager:
     def __init__(self, bot: commands.Bot):
@@ -129,3 +133,12 @@ class ShardManager:
 
     def is_world_running(self) -> bool:
         return any(shard.is_running() for shard in self.shards.values())
+
+    def peek(self, shard_name: str, count: int) -> list[str]:
+        shard_key = f"{self.bot.state['current_cluster']}:{shard_name}"
+        if shard_key in self.shards:
+            lines = self.shards[shard_key].peek_output(count)
+        else:
+            lines = []
+
+        return lines

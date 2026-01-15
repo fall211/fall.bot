@@ -61,5 +61,24 @@ class AdminCommandsCog(commands.Cog):
         else:
             await interaction.followup.send("Failed to create world. Check server logs.", ephemeral=True)
 
+    @app_commands.command(name="logs", description="Lets you peek at a shard's server log.")
+    @app_commands.describe(
+        shard_name="Name of the shard",
+        count="How many lines from the bottom you want to see"
+    )
+    async def logs(self, interaction: discord.Interaction, shard_name: str, count: int):
+        await interaction.response.defer(ephemeral=True)
+
+        lines = self.bot.shard_manager.peek(shard_name, count)
+
+        if lines:
+            string = ""
+            for line in lines:
+                string += line
+
+            await interaction.followup.send(f"{lines}", ephemeral=True)
+        else:
+            await interaction.followup.send("Failed to get logs, check that your shard name is spelled correctly", ephemeral=True)
+
 async def setup(bot):
     await bot.add_cog(AdminCommandsCog(bot))
