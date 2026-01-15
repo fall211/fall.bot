@@ -69,6 +69,7 @@ class SelectionView(discord.ui.View):
         await interaction.edit_original_response(
             view=self, content=f"Changed cluster to {self.bot.state["current_cluster"]} on {branch} Branch."
         )
+        self.bot.update_state()
 
 class PanelMenu(View):
     def __init__(self, bot):
