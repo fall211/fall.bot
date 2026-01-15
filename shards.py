@@ -11,7 +11,7 @@ class Shard:
         self.shard_name = shard_name
         self.is_beta = is_beta
         self.process: Optional[subprocess.Popen] = None
-        self.exe = "dontstarve_dedicated_server_nullrenderer_x64"
+        self.exe = "./dontstarve_dedicated_server_nullrenderer_x64"
 
     @property
     def args(self):
