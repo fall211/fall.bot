@@ -17,6 +17,7 @@ class FallBot(commands.Bot):
         await self.load_extension("cogs.server_control")
         await self.load_extension("cogs.admin_commands")
         await self.load_extension("cogs.chat_relay")
+        print("cog setup done")
 
     async def on_ready(self):
         print(f"Logged in as {self.user}")
