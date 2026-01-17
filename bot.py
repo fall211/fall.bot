@@ -14,23 +14,23 @@ class FallBot(commands.Bot):
         self.shard_manager = ShardManager(self)
 
     async def setup_hook(self):
-        pass
+        await self.load_extension("cogs.server_control")
+        await self.load_extension("cogs.admin_commands")
+        await self.load_extension("cogs.chat_relay")
+        print("cog setup done")
+
+        guild = discord.Object(id=CURRENT_SERVER_ID)
+        synced = await self.tree.sync(guild=guild)
+        print(f"synced {len(synced)} commands to test guild {guild.id}")
 
     async def on_ready(self):
         print(f"Logged in as {self.user}")
-        # Add persistent views, leave wrong guilds, etc.
         save_state(self.state)
 
         async for guild in self.fetch_guilds():
             if guild.id not in ALLOWED_SERVERS:
                 await guild.leave()
 
-        await self.load_extension("cogs.server_control")
-        await self.load_extension("cogs.admin_commands")
-        await self.load_extension("cogs.chat_relay")
-        print("cog setup done")
-
-        await self.tree.sync(guild=discord.Object(id=CURRENT_SERVER_ID))
 
         await self.change_presence(
             activity=discord.Activity(
